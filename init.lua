@@ -152,7 +152,6 @@ require('lazy').setup({
       end,
     },
   },
-
   {
     "catppuccin/nvim",
     name = "catppuccin",
@@ -323,6 +322,15 @@ vim.keymap.set("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move up" })
 
 -- Buffer
 vim.keymap.set("n", "ga", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
+
+-- [[ disable semantic highlighting ]]
+-- Hide semantic highlights for functions
+vim.api.nvim_set_hl(0, '@lsp.type.function', {})
+
+-- Hide all semantic highlights
+for _, group in ipairs(vim.fn.getcompletion("@lsp", "highlight")) do
+  vim.api.nvim_set_hl(0, group, {})
+end
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
