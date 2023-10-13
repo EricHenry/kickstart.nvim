@@ -508,7 +508,7 @@ local on_attach = function(_, bufnr)
   nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
 
   if vim.lsp.inlay_hint then
-    nmap("<leader>i", function() vim.lsp.inlay_hint(0, nil) end, { desc = "Toggle Inlay Hints" })
+    nmap("<leader>i", function() vim.lsp.inlay_hint(0, nil) end, "Toggle Inlay Hints")
   end
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
