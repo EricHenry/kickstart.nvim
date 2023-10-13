@@ -296,6 +296,12 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 -- Suspend
 vim.keymap.set("n", "<C-f>", ":sus<CR>", { desc = "Suspend", silent = true })
 
+-- Open new file adjacent to current file
+vim.keymap.set('n', '<leader>o', ':e <C-R>=expand("%:p:h") . "/" <CR>', { desc = "Open file adjacent" })
+
+-- Git
+vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+
 -- Insert -- Pres jk fast to enter
 vim.keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode", silent = true })
 
