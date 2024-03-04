@@ -272,12 +272,12 @@ require('lazy').setup {
     },
   },
 
-	{ -- auto-cd to root of git project
-		'notjedi/nvim-rooter.lua',
-		config = function()
-			require('nvim-rooter').setup()
-		end
-	},
+  { -- auto-cd to root of git project
+    'notjedi/nvim-rooter.lua',
+    config = function()
+      require('nvim-rooter').setup()
+    end,
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following lua:
@@ -547,7 +547,7 @@ require('lazy').setup {
           --  For example, in C this would take you to the header
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-          map('<leader>F', function()
+          map('F', function()
             -- vim.lsp.buf.format { async = true }
             require('conform').format()
           end, 'Format Code')
@@ -679,7 +679,7 @@ require('lazy').setup {
             },
           },
         },
-
+        marksman = {},
         lua_ls = {
           -- cmd = {...},
           -- filetypes { ...},
@@ -722,7 +722,7 @@ require('lazy').setup {
       --    :Mason
       --
       --  You can press `g?` for help in this menu
-      --[[ require('mason').setup()
+      --[[require('mason').setup()
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -743,7 +743,7 @@ require('lazy').setup {
             require('lspconfig')[server_name].setup(server)
           end,
         },
-      } ]]
+      }]]
     end,
   },
   { -- inline function signatures
@@ -760,10 +760,11 @@ require('lazy').setup {
       }
     end,
   },
+  { 'junegunn/fzf', build = './install --bin' },
   {
     'junegunn/fzf.vim',
     dependencies = {
-      { 'junegunn/fzf', dir = '~/.fzf', build = './install --all' },
+      -- { 'junegunn/fzf', name = 'fzf', dir = '~/.fzf', build = './install --all' },
       { 'jonhoo/proximity-sort', build = 'cargo install proximity-sort' },
     },
     config = function()
@@ -802,12 +803,13 @@ require('lazy').setup {
       -- notify_on_error = false,
       -- format_on_save = {
       --   timeout_ms = 500,
-      --   lsp_fallback = true,
+      -- lsp_fallback = true,
       -- },
       formatters_by_ft = {
         c = { 'clang_format' },
         lua = { 'stylua' },
         rust = { 'rustfmt' },
+        markdown = { 'marksman' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -927,10 +929,10 @@ require('lazy').setup {
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
       -- Load the colorscheme here
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-storm'
 
       -- You can configure highlights by doing something like
-      vim.cmd.hi 'Comment gui=none'
+      -- vim.cmd.hi 'Comment gui=none'
     end,
   },
   {
@@ -940,6 +942,43 @@ require('lazy').setup {
     config = function()
       -- vim.cmd.colorscheme 'catppuccin-macchiato'
     end,
+  },
+  {
+    'ellisonleao/gruvbox.nvim',
+    priority = 1000,
+    config = function()
+      vim.o.background = 'dark' -- or "light" for light mode
+      vim.cmd.colorscheme 'gruvbox'
+    end,
+    opts = ...,
+  },
+  {
+    'rose-pine/neovim',
+    name = 'rose-pine',
+    config = function()
+      require('rose-pine').setup {
+        disable_background = true,
+      }
+
+      vim.cmd 'colorscheme rose-pine'
+    end,
+  },
+  {
+    'christoomey/vim-tmux-navigator',
+    cmd = {
+      'TmuxNavigateLeft',
+      'TmuxNavigateDown',
+      'TmuxNavigateUp',
+      'TmuxNavigateRight',
+      'TmuxNavigatePrevious',
+    },
+    keys = {
+      { '<c-h>', '<cmd><C-U>TmuxNavigateLeft<cr>' },
+      { '<c-j>', '<cmd><C-U>TmuxNavigateDown<cr>' },
+      { '<c-k>', '<cmd><C-U>TmuxNavigateUp<cr>' },
+      { '<c-l>', '<cmd><C-U>TmuxNavigateRight<cr>' },
+      { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+    },
   },
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
@@ -988,6 +1027,8 @@ require('lazy').setup {
         return ''
       end
 
+      -- require('mini.base16').setup({ palette = palette, use_cterm = true })
+
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
@@ -1034,6 +1075,7 @@ require('lazy').setup {
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
+  { 'nvim-treesitter/nvim-treesitter-context' },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
