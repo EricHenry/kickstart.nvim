@@ -272,6 +272,13 @@ require('lazy').setup {
     },
   },
 
+	{ -- auto-cd to root of git project
+		'notjedi/nvim-rooter.lua',
+		config = function()
+			require('nvim-rooter').setup()
+		end
+	},
+
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following lua:
   --    require('gitsigns').setup({ ... })
