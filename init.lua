@@ -417,6 +417,10 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>.', function()
+        local utils = require 'telescope.utils'
+        builtin.find_files { cwd = utils.buffer_dir() }
+      end, { desc = 'Find Files (root dir)' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -506,7 +510,8 @@ require('lazy').setup {
 
           -- Find references for the word under your cursor.
           -- map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-          map('gr', vim.lsp.buf.references, '[G]oto [R]eferences')
+          -- map('gr', vim.lsp.buf.references, '[G]oto [R]eferences')
+          map('gr', require('fzf_lsp').references_call, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
@@ -547,7 +552,7 @@ require('lazy').setup {
           --  For example, in C this would take you to the header
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-          map('F', function()
+          map('<leader>F', function()
             -- vim.lsp.buf.format { async = true }
             require('conform').format()
           end, 'Format Code')
@@ -995,15 +1000,15 @@ require('lazy').setup {
       local ai = require 'mini.ai'
       ai.setup {
         n_lines = 500,
-        custom_textobjects = {
-          o = ai.gen_spec.treesitter({
-            a = { '@block.outer', '@conditional.outer', '@loop.outer' },
-            i = { '@block.inner', '@conditional.inner', '@loop.inner' },
-          }, {}),
-          f = ai.gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }, {}),
-          c = ai.gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }, {}),
-          t = { '<([%p%w]-)%f[^<%w][^<>]->.-</%1>', '^<.->().*()</[^/]->$' },
-        },
+        -- custom_textobjects = {
+        --   o = ai.gen_spec.treesitter({
+        --     a = { '@block.outer', '@conditional.outer', '@loop.outer' },
+        --     i = { '@block.inner', '@conditional.inner', '@loop.inner' },
+        --   }, {}),
+        --   f = ai.gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }, {}),
+        --   c = ai.gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }, {}),
+        --   t = { '<([%p%w]-)%f[^<%w][^<>]->.-</%1>', '^<.->().*()</[^/]->$' },
+        -- },
       }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
@@ -1075,7 +1080,32 @@ require('lazy').setup {
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
-  { 'nvim-treesitter/nvim-treesitter-context' },
+  { 'nvim-treesitter/nvim-treesitter-context', opts = { mode = 'cursor', max_lines = 3 } },
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    config = function()
+      -- When in diff mode, we want to use the default
+      -- vim text objects c & C instead of the treesitter ones.
+      local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
+      local configs = require 'nvim-treesitter.configs'
+      for name, fn in pairs(move) do
+        if name:find 'goto' == 1 then
+          move[name] = function(q, ...)
+            if vim.wo.diff then
+              local config = configs.get_module('textobjects.move')[name] ---@type table<string,string>
+              for key, query in pairs(config or {}) do
+                if q == query and key:find '[%]%[][cC]' then
+                  vim.cmd('normal! ' .. key)
+                  return
+                end
+              end
+            end
+            return fn(q, ...)
+          end
+        end
+      end
+    end,
+  },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
