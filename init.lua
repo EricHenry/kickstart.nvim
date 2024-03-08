@@ -99,7 +99,7 @@ vim.g.maplocalleader = ' '
 vim.opt.number = true
 -- You can also add relative line numbers, for help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -158,9 +158,9 @@ vim.keymap.set('n', '<C-f>', ':sus<CR>', { desc = 'Suspend', silent = true })
 vim.keymap.set('n', 'ga', '<cmd>e #<cr>', { desc = 'Switch to Other Buffer' })
 
 -- quick-open
-vim.keymap.set('', '<C-p>', '<cmd>Files<cr>')
+-- vim.keymap.set('', '<C-p>', '<cmd>Files<cr>')
 -- search buffers
-vim.keymap.set('n', '<leader>;', '<cmd>Buffers<cr>')
+-- vim.keymap.set('n', '<leader>;', '<cmd>Buffers<cr>')
 
 -- Jump to start and end of line using the home row keys
 vim.keymap.set('', 'H', '^')
@@ -384,6 +384,7 @@ require('lazy').setup {
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      local actions = require 'telescope.actions'
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -393,10 +394,36 @@ require('lazy').setup {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        defaults = vim.tbl_extend(
+          'force',
+          require('telescope.themes').get_ivy(), -- or get_cursor, get_dropdown
+          {
+            layout_config = {
+              height = 0.2,
+            },
+            --- your own `default` options go here, e.g.:
+            -- path_display = {
+            --   truncate = 2,
+            -- },
+            mappings = {
+              i = {
+                ['<c-[>'] = actions.close,
+              },
+            },
+          }
+        ),
+        pickers = {
+          buffers = {
+            mappings = {
+              i = {
+                ['<c-d>'] = actions.delete_buffer + actions.move_to_top,
+              },
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
+            require('telescope.themes').get_ivy(),
           },
         },
       }
@@ -505,36 +532,27 @@ require('lazy').setup {
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-T>.
-          -- map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-          map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          -- map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-          -- map('gr', vim.lsp.buf.references, '[G]oto [R]eferences')
-          map('gr', require('fzf_lsp').references_call, '[G]oto [R]eferences')
+          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          -- map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-          map('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
+          map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
-          -- map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-          map('gy', vim.lsp.buf.type_definition, 'Type [D]efinition')
+          map('gy', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          -- map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-          -- map('<leader>ds', vim.lsp.buf.document_symbol, '[D]ocument [S]ymbols')
-          map('<leader>ds', require('fzf_lsp').document_symbol_call, '[D]ocument [S]ymbols')
+          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
 
           -- Fuzzy find all the symbols in your current workspace
           --  Similar to document symbols, except searches over your whole project.
-          -- map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-          -- map('<leader>ws', vim.lsp.buf.workspace_symbol, '[W]orkspace [S]ymbols')
-          map('<leader>ws', require('fzf_lsp').workspace_symbol_call, '[W]orkspace [S]ymbols')
+          map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
 
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
@@ -576,9 +594,9 @@ require('lazy').setup {
           end
           -- None of this semantics tokens business.
           -- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-          if client and client.server_capabilities.semanticTokensProvider then
-            client.server_capabilities.semanticTokensProvider = nil
-          end
+          -- if client and client.server_capabilities.semanticTokensProvider then
+            -- client.server_capabilities.semanticTokensProvider = nil
+          -- end
         end,
       })
 
@@ -765,42 +783,42 @@ require('lazy').setup {
       }
     end,
   },
-  { 'junegunn/fzf', build = './install --bin' },
-  {
-    'junegunn/fzf.vim',
-    dependencies = {
-      -- { 'junegunn/fzf', name = 'fzf', dir = '~/.fzf', build = './install --all' },
-      { 'jonhoo/proximity-sort', build = 'cargo install proximity-sort' },
-    },
-    config = function()
-      -- stop putting a giant window over my editor
-      vim.g.fzf_layout = { down = '~20%' }
-      -- when using :Files, pass the file list through
-      --
-      --   https://github.com/jonhoo/proximity-sort
-      --
-      -- to prefer files closer to the current file.
-      local function list_cmd()
-        local base = vim.fn.fnamemodify(vim.fn.expand '%', ':h:.:S')
-        if base == '.' then
-          -- if there is no current file,
-          -- proximity-sort can't do its thing
-          return 'fd --type file --follow'
-        else
-          return vim.fn.printf('fd --type file --follow | proximity-sort %s', vim.fn.shellescape(vim.fn.expand '%'))
-        end
-      end
-      vim.api.nvim_create_user_command('Files', function(arg)
-        vim.fn['fzf#vim#files'](arg.qargs, { source = list_cmd(), options = '--tiebreak=index' }, arg.bang)
-      end, { bang = true, nargs = '?', complete = 'dir' })
-    end,
-  },
-  {
-    'gfanto/fzf-lsp.nvim',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-    },
-  },
+  -- { 'junegunn/fzf', build = './install --bin' },
+  -- {
+  --   'junegunn/fzf.vim',
+  --   dependencies = {
+  --     -- { 'junegunn/fzf', name = 'fzf', dir = '~/.fzf', build = './install --all' },
+  --     { 'jonhoo/proximity-sort', build = 'cargo install proximity-sort' },
+  --   },
+  --   config = function()
+  --     -- stop putting a giant window over my editor
+  --     vim.g.fzf_layout = { down = '~20%' }
+  --     -- when using :Files, pass the file list through
+  --     --
+  --     --   https://github.com/jonhoo/proximity-sort
+  --     --
+  --     -- to prefer files closer to the current file.
+  --     local function list_cmd()
+  --       local base = vim.fn.fnamemodify(vim.fn.expand '%', ':h:.:S')
+  --       if base == '.' then
+  --         -- if there is no current file,
+  --         -- proximity-sort can't do its thing
+  --         return 'fd --type file --follow'
+  --       else
+  --         return vim.fn.printf('fd --type file --follow | proximity-sort %s', vim.fn.shellescape(vim.fn.expand '%'))
+  --       end
+  --     end
+  --     vim.api.nvim_create_user_command('Files', function(arg)
+  --       vim.fn['fzf#vim#files'](arg.qargs, { source = list_cmd(), options = '--tiebreak=index' }, arg.bang)
+  --     end, { bang = true, nargs = '?', complete = 'dir' })
+  --   end,
+  -- },
+  -- {
+  --   'gfanto/fzf-lsp.nvim',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --   },
+  -- },
 
   { -- Autoformat
     'stevearc/conform.nvim',
@@ -1117,7 +1135,7 @@ require('lazy').setup {
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.indent_line',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
