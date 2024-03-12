@@ -519,11 +519,6 @@ require('lazy').setup {
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
-      -- Automatically install LSPs and related tools to stdpath for neovim
-      -- 'williamboman/mason.nvim',
-      -- 'williamboman/mason-lspconfig.nvim',
-      -- 'WhoIsSethDaniel/mason-tool-installer.nvim',
-
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
@@ -636,9 +631,9 @@ require('lazy').setup {
           end
           -- None of this semantics tokens business.
           -- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-          if client and client.server_capabilities.semanticTokensProvider then
-            client.server_capabilities.semanticTokensProvider = nil
-          end
+          -- if client and client.server_capabilities.semanticTokensProvider then
+          --   client.server_capabilities.semanticTokensProvider = nil
+          -- end
         end,
       })
 
@@ -824,6 +819,21 @@ require('lazy').setup {
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
     dependencies = {
+      -- Snippet Engine & its associated nvim-cmp source
+      {
+        'L3MON4D3/LuaSnip',
+        build = (function()
+          -- Build Step is needed for regex support in snippets
+          -- This step is not supported in many windows environments
+          -- Remove the below condition to re-enable on windows
+          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+            return
+          end
+          return 'make install_jsregexp'
+        end)(),
+      },
+      'saadparwaiz1/cmp_luasnip',
+
       -- Adds other completion capabilities.
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
@@ -833,8 +843,15 @@ require('lazy').setup {
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
+      local luasnip = require 'luasnip'
+      luasnip.config.setup {}
 
       cmp.setup {
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
         completion = { completeopt = 'menu,menuone,noinsert' },
 
         -- For an understanding of why these mappings were
@@ -859,9 +876,29 @@ require('lazy').setup {
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
           ['<C-Space>'] = cmp.mapping.complete {},
+
+          -- Think of <c-l> as moving to the right of your snippet expansion.
+          --  So if you have a snippet that's like:
+          --  function $name($args)
+          --    $body
+          --  end
+          --
+          -- <c-l> will move you to the right of each of the expansion locations.
+          -- <c-h> is similar, except moving you backwards.
+          ['<C-l>'] = cmp.mapping(function()
+            if luasnip.expand_or_locally_jumpable() then
+              luasnip.expand_or_jump()
+            end
+          end, { 'i', 's' }),
+          ['<C-h>'] = cmp.mapping(function()
+            if luasnip.locally_jumpable(-1) then
+              luasnip.jump(-1)
+            end
+          end, { 'i', 's' }),
         },
         sources = {
           { name = 'nvim_lsp' },
+          { name = 'luasnip' },
           { name = 'path' },
         },
         experimental = {
@@ -870,50 +907,18 @@ require('lazy').setup {
       }
     end,
   },
-  {
-    'wincent/base16-nvim',
-    lazy = false, -- load at start
-    priority = 1000, -- load first
-    config = function()
-      vim.cmd [[colorscheme base16-gruvbox-dark-hard]]
-      vim.o.background = 'dark'
-      -- XXX: hi Normal ctermbg=NONE
-      -- Make comments more prominent -- they are important.
-      local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-      vim.api.nvim_set_hl(0, 'Comment', bools)
-      -- Make it clearly visible which argument we're at.
-      local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-      vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-      -- XXX
-      -- Would be nice to customize the highlighting of warnings and the like to make
-      -- them less glaring. But alas
-      -- https://github.com/nvim-lua/lsp_extensions.nvim/issues/21
-      -- call Base16hi("CocHintSign", g:base16_gui03, "", g:base16_cterm03, "", "", "")
-    end,
-  },
-  {
-    'AlexvZyl/nordic.nvim',
-    lazy = false,
-    priority = 1000,
-    config = function()
-      -- require('nordic').setup {
-      --   -- Enable general editor background transparency.
-      --   transparent_bg = true,
-      -- }
-      -- require('nordic').load()
-    end,
-  },
-  {
-    'rose-pine/neovim',
-    name = 'rose-pine',
-    config = function()
-      -- require('rose-pine').setup {
-      --   disable_background = true,
-      -- }
-      -- --
-      -- vim.cmd 'colorscheme rose-pine'
-    end,
-  },
+	{
+		'EricHenry/gruber-darker.nvim',
+		config = function()
+			require('gruber-darker').setup({
+				-- OPTIONAL
+				transparent = true, -- removes the background
+				-- underline = false, -- disables underline fonts
+				-- bold = false, -- disables bold fonts
+			})
+			vim.cmd.colorscheme('gruber-darker')
+		end,
+	},
   {
     'christoomey/vim-tmux-navigator',
     cmd = {
@@ -994,7 +999,9 @@ require('lazy').setup {
         ensure_installed = { 'bash', 'c', 'cpp', 'html', 'lua', 'markdown', 'ron', 'rust', 'toml', 'vim', 'vimdoc' },
         -- Autoinstall languages that are not installed
         auto_install = true,
-        highlight = { enable = false },
+	-- with gruvbox theme set this to false
+        -- highlight = { enable = false },
+        highlight = { enable = true },
         indent = { enable = true },
         incremental_selection = {
           enable = true,
