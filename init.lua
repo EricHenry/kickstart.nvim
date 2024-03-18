@@ -908,7 +908,6 @@ require('lazy').setup {
 		end,
 	},
 	-- lualine
-
 	{ 'nvim-lualine/lualine.nvim',
 		dependencies = { 'nvim-tree/nvim-web-devicons' },
 		config = function()
@@ -939,6 +938,66 @@ require('lazy').setup {
 			})
 			vim.cmd.colorscheme('gruber-darker')
 		end,
+	},
+	{
+		"mbbill/undotree",
+		config = function()
+			vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
+		end
+	},
+	{
+		"tpope/vim-fugitive",
+		config = function() 
+			vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+
+			local ThePrimeagen_Fugitive = vim.api.nvim_create_augroup("ThePrimeagen_Fugitive", {})
+
+			local autocmd = vim.api.nvim_create_autocmd
+			autocmd("BufWinEnter", {
+				group = ThePrimeagen_Fugitive,
+				pattern = "*",
+				callback = function()
+					if vim.bo.ft ~= "fugitive" then
+						return
+					end
+
+					local bufnr = vim.api.nvim_get_current_buf()
+					local opts = {buffer = bufnr, remap = false}
+					vim.keymap.set("n", "<leader>p", function()
+						vim.cmd.Git('push')
+					end, opts)
+
+					-- rebase always
+					vim.keymap.set("n", "<leader>P", function()
+						vim.cmd.Git({'pull',  '--rebase'})
+					end, opts)
+
+					-- NOTE: It allows me to easily set the branch i am pushing and any tracking
+					-- needed if i did not set the branch up correctly
+					vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
+				end,
+			})
+
+
+			vim.keymap.set("n", "gu", "<cmd>diffget //2<CR>")
+			vim.keymap.set("n", "gh", "<cmd>diffget //3<CR>")
+		end
+	},
+	{
+		"brenton-leighton/multiple-cursors.nvim",
+		version = "*",  -- Use the latest tagged version
+		opts = {},  -- This causes the plugin setup function to be called
+		keys = {
+			{"<C-Down>", "<Cmd>MultipleCursorsAddDown<CR>", mode = {"n", "i"}},
+			{"<A-c>", "<Cmd>MultipleCursorsAddDown<CR>"},
+			-- {"<C-Up>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
+			-- {"<C-k>", "<Cmd>MultipleCursorsAddUp<CR>"},
+			{"<C-LeftMouse>", "<Cmd>MultipleCursorsMouseAddDelete<CR>", mode = {"n", "i"}},
+			{"<Leader>a", "<Cmd>MultipleCursorsAddMatches<CR>", mode = {"n", "x"}},
+			{"<Leader>A", "<Cmd>MultipleCursorsAddMatchesV<CR>", mode = {"n", "x"}},
+			{"<Leader>d", "<Cmd>MultipleCursorsAddJumpNextMatch<CR>", mode = {"n", "x"}},
+			{"<Leader>D", "<Cmd>MultipleCursorsJumpNextMatch<CR>"},
+		},
 	},
 	{
 		'christoomey/vim-tmux-navigator',
@@ -1012,12 +1071,53 @@ require('lazy').setup {
 	{
 		'nvim-treesitter/nvim-treesitter',
 		build = ':TSUpdate',
+		dependencies = {
+			{
+				"nvim-treesitter/nvim-treesitter-textobjects",
+				config = function()
+					-- When in diff mode, we want to use the default
+					-- vim text objects c & C instead of the treesitter ones.
+					local move = require("nvim-treesitter.textobjects.move") ---@type table<string,fun(...)>
+					local configs = require("nvim-treesitter.configs")
+					for name, fn in pairs(move) do
+						if name:find("goto") == 1 then
+							move[name] = function(q, ...)
+								if vim.wo.diff then
+									local config = configs.get_module("textobjects.move")[name] ---@type table<string,string>
+									for key, query in pairs(config or {}) do
+										if q == query and key:find("[%]%[][cC]") then
+											vim.cmd("normal! " .. key)
+											return
+										end
+									end
+								end
+								return fn(q, ...)
+							end
+						end
+					end
+				end,
+			},
+		},
 		config = function()
 			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
 			---@diagnostic disable-next-line: missing-fields
 			require('nvim-treesitter.configs').setup {
-				ensure_installed = { 'bash', 'c', 'cpp', 'html', 'lua', 'markdown', 'ron', 'rust', 'toml', 'vim', 'vimdoc' },
+				ensure_installed = {
+					'bash',
+					'c',
+					'cpp',
+					'fish',
+					'html',
+					'lua',
+					'markdown',
+					'ron',
+					'rust',
+					'toml',
+					'vim',
+					'vimdoc',
+					'zig',
+				},
 				-- Autoinstall languages that are not installed
 				auto_install = true,
 				-- with gruvbox theme set this to false
