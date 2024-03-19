@@ -514,8 +514,286 @@ require('lazy').setup {
 				builtin.find_files { cwd = vim.fn.stdpath 'config' }
 			end, { desc = '[S]earch [N]eovim files' })
 		end,
+	},	
+	-- inline function signatures
+	{
+		'ray-x/lsp_signature.nvim',
+		event = 'VeryLazy',
+		opts = {},
+		config = function(_, opts)
+			-- Get signatures (and _only_ signatures) when in argument lists.
+			require('lsp_signature').setup {
+				doc_lines = 0,
+				handler_opts = {
+					border = 'none',
+				},
+			}
+		end,
+	},
+	{ -- Autoformat
+		'stevearc/conform.nvim',
+		opts = {
+			-- notify_on_error = false,
+			-- format_on_save = {
+			--   timeout_ms = 500,
+			-- lsp_fallback = true,
+			-- },
+			formatters_by_ft = {
+				c = { 'clang_format' },
+				lua = { 'stylua' },
+				rust = { 'rustfmt' },
+				markdown = { 'marksman' },
+				-- Conform can also run multiple formatters sequentially
+				-- python = { "isort", "black" },
+				--
+				-- You can use a sub-list to tell conform to run *until* a formatter
+				-- is found.
+				-- javascript = { { "prettierd", "prettier" } },
+			},
+		},
 	},
 
+	{ -- Autocompletion
+		'hrsh7th/nvim-cmp',
+		event = 'InsertEnter',
+		dependencies = {
+			-- Snippet Engine & its associated nvim-cmp source
+			{
+				'L3MON4D3/LuaSnip',
+				build = (function()
+					-- Build Step is needed for regex support in snippets
+					-- This step is not supported in many windows environments
+					-- Remove the below condition to re-enable on windows
+					if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+						return
+					end
+					return 'make install_jsregexp'
+				end)(),
+			},
+			'saadparwaiz1/cmp_luasnip',
+
+			-- Adds other completion capabilities.
+			--  nvim-cmp does not ship with all sources by default. They are split
+			--  into multiple repos for maintenance purposes.
+			'hrsh7th/cmp-nvim-lsp',
+			'hrsh7th/cmp-path',
+		},
+		config = function()
+			-- See `:help cmp`
+			local cmp = require 'cmp'
+			local luasnip = require 'luasnip'
+			luasnip.config.setup {}
+
+			cmp.setup {
+				snippet = {
+					expand = function(args)
+						luasnip.lsp_expand(args.body)
+					end,
+				},
+				completion = { completeopt = 'menu,menuone,noinsert' },
+
+				-- For an understanding of why these mappings were
+				-- chosen, you will need to read `:help ins-completion`
+				--
+				-- No, but seriously. Please read `:help ins-completion`, it is really good!
+				mapping = cmp.mapping.preset.insert {
+					-- Scrolling docs
+					['<C-u>'] = cmp.mapping.scroll_docs(-4),
+					['<C-d>'] = cmp.mapping.scroll_docs(4),
+					-- Select the [n]ext item
+					['<C-n>'] = cmp.mapping.select_next_item(),
+					-- Select the [p]revious item
+					['<C-p>'] = cmp.mapping.select_prev_item(),
+
+					-- Accept ([y]es) the completion.
+					--  This will auto-import if your LSP supports it.
+					--  This will expand snippets if the LSP sent a snippet.
+					['<C-y>'] = cmp.mapping.confirm { select = true },
+
+					-- Manually trigger a completion from nvim-cmp.
+					--  Generally you don't need this, because nvim-cmp will display
+					--  completions whenever it has completion options available.
+					['<C-Space>'] = cmp.mapping.complete {},
+
+					-- Think of <c-l> as moving to the right of your snippet expansion.
+					--  So if you have a snippet that's like:
+					--  function $name($args)
+					--    $body
+					--  end
+					--
+					-- <c-l> will move you to the right of each of the expansion locations.
+					-- <c-h> is similar, except moving you backwards.
+					['<C-l>'] = cmp.mapping(function()
+						if luasnip.expand_or_locally_jumpable() then
+							luasnip.expand_or_jump()
+						end
+					end, { 'i', 's' }),
+					['<C-h>'] = cmp.mapping(function()
+						if luasnip.locally_jumpable(-1) then
+							luasnip.jump(-1)
+						end
+					end, { 'i', 's' }),
+				},
+				sources = {
+					{ name = 'nvim_lsp' },
+					{ name = 'luasnip' },
+					{ name = 'path' },
+				},
+				experimental = {
+					ghost_text = true,
+				},
+			}
+		end,
+	},
+	-- lualine
+	{ 'nvim-lualine/lualine.nvim',
+		dependencies = { 'nvim-tree/nvim-web-devicons' },
+		config = function()
+			require('lualine').setup{
+				options = { theme = 'gruvbox' },
+				sections = {
+					lualine_a = {'mode'},
+					lualine_b = {'branch', 'diff', 'diagnostics'},
+					lualine_c = {
+						'filename',
+						function()
+							return vim.fn['nvim_treesitter#statusline'](180)
+						end},
+					lualine_x = {'encoding', 'fileformat', 'filetype'},
+					lualine_y = {'progress'},
+					lualine_z = {'location'}
+				},
+			}
+		end
+	},
+	{
+		"mbbill/undotree",
+		config = function()
+			vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
+		end
+	},
+	{
+		"tpope/vim-fugitive",
+		config = function() 
+			vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+
+			local ThePrimeagen_Fugitive = vim.api.nvim_create_augroup("ThePrimeagen_Fugitive", {})
+
+			local autocmd = vim.api.nvim_create_autocmd
+			autocmd("BufWinEnter", {
+				group = ThePrimeagen_Fugitive,
+				pattern = "*",
+				callback = function()
+					if vim.bo.ft ~= "fugitive" then
+						return
+					end
+
+					local bufnr = vim.api.nvim_get_current_buf()
+					local opts = {buffer = bufnr, remap = false}
+					vim.keymap.set("n", "<leader>p", function()
+						vim.cmd.Git('push')
+					end, opts)
+
+					-- rebase always
+					vim.keymap.set("n", "<leader>P", function()
+						vim.cmd.Git({'pull',  '--rebase'})
+					end, opts)
+
+					-- NOTE: It allows me to easily set the branch i am pushing and any tracking
+					-- needed if i did not set the branch up correctly
+					vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
+				end,
+			})
+
+
+			vim.keymap.set("n", "gu", "<cmd>diffget //2<CR>")
+			vim.keymap.set("n", "gh", "<cmd>diffget //3<CR>")
+		end
+	},
+	{
+		"brenton-leighton/multiple-cursors.nvim",
+		version = "*",  -- Use the latest tagged version
+		opts = {},  -- This causes the plugin setup function to be called
+		keys = {
+			{"<C-Down>", "<Cmd>MultipleCursorsAddDown<CR>", mode = {"n", "i"}},
+			{"<A-c>", "<Cmd>MultipleCursorsAddDown<CR>"},
+			-- {"<C-Up>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
+			-- {"<C-k>", "<Cmd>MultipleCursorsAddUp<CR>"},
+			{"<C-LeftMouse>", "<Cmd>MultipleCursorsMouseAddDelete<CR>", mode = {"n", "i"}},
+			{"<Leader>a", "<Cmd>MultipleCursorsAddMatches<CR>", mode = {"n", "x"}},
+			{"<Leader>A", "<Cmd>MultipleCursorsAddMatchesV<CR>", mode = {"n", "x"}},
+			{"<Leader>d", "<Cmd>MultipleCursorsAddJumpNextMatch<CR>", mode = {"n", "x"}},
+			{"<Leader>D", "<Cmd>MultipleCursorsJumpNextMatch<CR>"},
+		},
+	},
+	{
+		'christoomey/vim-tmux-navigator',
+		cmd = {
+			'TmuxNavigateLeft',
+			'TmuxNavigateDown',
+			'TmuxNavigateUp',
+			'TmuxNavigateRight',
+			'TmuxNavigatePrevious',
+		},
+		keys = {
+			{ '<c-h>', '<cmd><C-U>TmuxNavigateLeft<cr>' },
+			{ '<c-j>', '<cmd><C-U>TmuxNavigateDown<cr>' },
+			{ '<c-k>', '<cmd><C-U>TmuxNavigateUp<cr>' },
+			{ '<c-l>', '<cmd><C-U>TmuxNavigateRight<cr>' },
+			{ '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+		},
+	},
+	-- Collection of various small independent plugins/modules
+	{
+		'echasnovski/mini.nvim',
+		config = function()
+			-- Better Around/Inside textobjects
+			--
+			-- Examples:
+			--  - va)  - [V]isually select [A]round [)]paren
+			--  - yinq - [Y]ank [I]nside [N]ext [']quote
+			--  - ci'  - [C]hange [I]nside [']quote
+			local ai = require 'mini.ai'
+			ai.setup {
+				n_lines = 500,
+				-- custom_textobjects = {
+				--   o = ai.gen_spec.treesitter({
+				--     a = { '@block.outer', '@conditional.outer', '@loop.outer' },
+				--     i = { '@block.inner', '@conditional.inner', '@loop.inner' },
+				--   }, {}),
+				--   f = ai.gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }, {}),
+				--   c = ai.gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }, {}),
+				--   t = { '<([%p%w]-)%f[^<%w][^<>]->.-</%1>', '^<.->().*()</[^/]->$' },
+				-- },
+			}
+
+			-- Add/delete/replace surroundings (brackets, quotes, etc.)
+			--
+			-- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
+			-- - sd'   - [S]urround [D]elete [']quotes
+			-- - sr)'  - [S]urround [R]eplace [)] [']
+			require('mini.surround').setup()
+
+			-- Simple and easy statusline.
+			--  You could remove this setup call if you don't like it,
+			--  and try some other statusline plugin
+			-- local statusline = require 'mini.statusline'
+			-- statusline.setup()
+
+			-- You can configure sections in the statusline by overriding their
+			-- default behavior. For example, here we disable the section for
+			-- cursor information because line numbers are already enabled
+			---@diagnostic disable-next-line: duplicate-set-field
+			-- statusline.section_location = function()
+			-- return ''
+			-- end
+
+			-- require('mini.base16').setup({ palette = palette, use_cterm = true })
+
+			-- ... and there is more!
+			--  Check out: https://github.com/echasnovski/mini.nvim
+		end,
+	},
 	{ -- LSP Configuration & Plugins
 		'neovim/nvim-lspconfig',
 		dependencies = {
@@ -631,9 +909,9 @@ require('lazy').setup {
 					end
 					-- None of this semantics tokens business.
 					-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-					-- if client and client.server_capabilities.semanticTokensProvider then
-					--   client.server_capabilities.semanticTokensProvider = nil
-					-- end
+					if client and client.server_capabilities.semanticTokensProvider then
+					  client.server_capabilities.semanticTokensProvider = nil
+					end
 				end,
 			})
 
@@ -777,296 +1055,6 @@ require('lazy').setup {
 			end
 		end,
 	},
-	-- inline function signatures
-	{
-		'ray-x/lsp_signature.nvim',
-		event = 'VeryLazy',
-		opts = {},
-		config = function(_, opts)
-			-- Get signatures (and _only_ signatures) when in argument lists.
-			require('lsp_signature').setup {
-				doc_lines = 0,
-				handler_opts = {
-					border = 'none',
-				},
-			}
-		end,
-	},
-	{ -- Autoformat
-		'stevearc/conform.nvim',
-		opts = {
-			-- notify_on_error = false,
-			-- format_on_save = {
-			--   timeout_ms = 500,
-			-- lsp_fallback = true,
-			-- },
-			formatters_by_ft = {
-				c = { 'clang_format' },
-				lua = { 'stylua' },
-				rust = { 'rustfmt' },
-				markdown = { 'marksman' },
-				-- Conform can also run multiple formatters sequentially
-				-- python = { "isort", "black" },
-				--
-				-- You can use a sub-list to tell conform to run *until* a formatter
-				-- is found.
-				-- javascript = { { "prettierd", "prettier" } },
-			},
-		},
-	},
-
-	{ -- Autocompletion
-		'hrsh7th/nvim-cmp',
-		event = 'InsertEnter',
-		dependencies = {
-			-- Snippet Engine & its associated nvim-cmp source
-			{
-				'L3MON4D3/LuaSnip',
-				build = (function()
-					-- Build Step is needed for regex support in snippets
-					-- This step is not supported in many windows environments
-					-- Remove the below condition to re-enable on windows
-					if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-						return
-					end
-					return 'make install_jsregexp'
-				end)(),
-			},
-			'saadparwaiz1/cmp_luasnip',
-
-			-- Adds other completion capabilities.
-			--  nvim-cmp does not ship with all sources by default. They are split
-			--  into multiple repos for maintenance purposes.
-			'hrsh7th/cmp-nvim-lsp',
-			'hrsh7th/cmp-path',
-		},
-		config = function()
-			-- See `:help cmp`
-			local cmp = require 'cmp'
-			local luasnip = require 'luasnip'
-			luasnip.config.setup {}
-
-			cmp.setup {
-				snippet = {
-					expand = function(args)
-						luasnip.lsp_expand(args.body)
-					end,
-				},
-				completion = { completeopt = 'menu,menuone,noinsert' },
-
-				-- For an understanding of why these mappings were
-				-- chosen, you will need to read `:help ins-completion`
-				--
-				-- No, but seriously. Please read `:help ins-completion`, it is really good!
-				mapping = cmp.mapping.preset.insert {
-					-- Scrolling docs
-					['<C-u>'] = cmp.mapping.scroll_docs(-4),
-					['<C-d>'] = cmp.mapping.scroll_docs(4),
-					-- Select the [n]ext item
-					['<C-n>'] = cmp.mapping.select_next_item(),
-					-- Select the [p]revious item
-					['<C-p>'] = cmp.mapping.select_prev_item(),
-
-					-- Accept ([y]es) the completion.
-					--  This will auto-import if your LSP supports it.
-					--  This will expand snippets if the LSP sent a snippet.
-					['<C-y>'] = cmp.mapping.confirm { select = true },
-
-					-- Manually trigger a completion from nvim-cmp.
-					--  Generally you don't need this, because nvim-cmp will display
-					--  completions whenever it has completion options available.
-					['<C-Space>'] = cmp.mapping.complete {},
-
-					-- Think of <c-l> as moving to the right of your snippet expansion.
-					--  So if you have a snippet that's like:
-					--  function $name($args)
-					--    $body
-					--  end
-					--
-					-- <c-l> will move you to the right of each of the expansion locations.
-					-- <c-h> is similar, except moving you backwards.
-					['<C-l>'] = cmp.mapping(function()
-						if luasnip.expand_or_locally_jumpable() then
-							luasnip.expand_or_jump()
-						end
-					end, { 'i', 's' }),
-					['<C-h>'] = cmp.mapping(function()
-						if luasnip.locally_jumpable(-1) then
-							luasnip.jump(-1)
-						end
-					end, { 'i', 's' }),
-				},
-				sources = {
-					{ name = 'nvim_lsp' },
-					{ name = 'luasnip' },
-					{ name = 'path' },
-				},
-				experimental = {
-					ghost_text = true,
-				},
-			}
-		end,
-	},
-	-- lualine
-	{ 'nvim-lualine/lualine.nvim',
-		dependencies = { 'nvim-tree/nvim-web-devicons' },
-		config = function()
-			require('lualine').setup{
-				sections = {
-					lualine_a = {'mode'},
-					lualine_b = {'branch', 'diff', 'diagnostics'},
-					lualine_c = {
-						'filename',
-						function()
-							return vim.fn['nvim_treesitter#statusline'](180)
-						end},
-					lualine_x = {'encoding', 'fileformat', 'filetype'},
-					lualine_y = {'progress'},
-					lualine_z = {'location'}
-				},
-			}
-		end
-	},
-	{
-		'EricHenry/gruber-darker.nvim',
-		config = function()
-			require('gruber-darker').setup({
-				-- OPTIONAL
-				transparent = true, -- removes the background
-				-- underline = false, -- disables underline fonts
-				-- bold = false, -- disables bold fonts
-			})
-			vim.cmd.colorscheme('gruber-darker')
-		end,
-	},
-	{
-		"mbbill/undotree",
-		config = function()
-			vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
-		end
-	},
-	{
-		"tpope/vim-fugitive",
-		config = function() 
-			vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
-
-			local ThePrimeagen_Fugitive = vim.api.nvim_create_augroup("ThePrimeagen_Fugitive", {})
-
-			local autocmd = vim.api.nvim_create_autocmd
-			autocmd("BufWinEnter", {
-				group = ThePrimeagen_Fugitive,
-				pattern = "*",
-				callback = function()
-					if vim.bo.ft ~= "fugitive" then
-						return
-					end
-
-					local bufnr = vim.api.nvim_get_current_buf()
-					local opts = {buffer = bufnr, remap = false}
-					vim.keymap.set("n", "<leader>p", function()
-						vim.cmd.Git('push')
-					end, opts)
-
-					-- rebase always
-					vim.keymap.set("n", "<leader>P", function()
-						vim.cmd.Git({'pull',  '--rebase'})
-					end, opts)
-
-					-- NOTE: It allows me to easily set the branch i am pushing and any tracking
-					-- needed if i did not set the branch up correctly
-					vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
-				end,
-			})
-
-
-			vim.keymap.set("n", "gu", "<cmd>diffget //2<CR>")
-			vim.keymap.set("n", "gh", "<cmd>diffget //3<CR>")
-		end
-	},
-	{
-		"brenton-leighton/multiple-cursors.nvim",
-		version = "*",  -- Use the latest tagged version
-		opts = {},  -- This causes the plugin setup function to be called
-		keys = {
-			{"<C-Down>", "<Cmd>MultipleCursorsAddDown<CR>", mode = {"n", "i"}},
-			{"<A-c>", "<Cmd>MultipleCursorsAddDown<CR>"},
-			-- {"<C-Up>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
-			-- {"<C-k>", "<Cmd>MultipleCursorsAddUp<CR>"},
-			{"<C-LeftMouse>", "<Cmd>MultipleCursorsMouseAddDelete<CR>", mode = {"n", "i"}},
-			{"<Leader>a", "<Cmd>MultipleCursorsAddMatches<CR>", mode = {"n", "x"}},
-			{"<Leader>A", "<Cmd>MultipleCursorsAddMatchesV<CR>", mode = {"n", "x"}},
-			{"<Leader>d", "<Cmd>MultipleCursorsAddJumpNextMatch<CR>", mode = {"n", "x"}},
-			{"<Leader>D", "<Cmd>MultipleCursorsJumpNextMatch<CR>"},
-		},
-	},
-	{
-		'christoomey/vim-tmux-navigator',
-		cmd = {
-			'TmuxNavigateLeft',
-			'TmuxNavigateDown',
-			'TmuxNavigateUp',
-			'TmuxNavigateRight',
-			'TmuxNavigatePrevious',
-		},
-		keys = {
-			{ '<c-h>', '<cmd><C-U>TmuxNavigateLeft<cr>' },
-			{ '<c-j>', '<cmd><C-U>TmuxNavigateDown<cr>' },
-			{ '<c-k>', '<cmd><C-U>TmuxNavigateUp<cr>' },
-			{ '<c-l>', '<cmd><C-U>TmuxNavigateRight<cr>' },
-			{ '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
-		},
-	},
-	-- Collection of various small independent plugins/modules
-	{
-		'echasnovski/mini.nvim',
-		config = function()
-			-- Better Around/Inside textobjects
-			--
-			-- Examples:
-			--  - va)  - [V]isually select [A]round [)]paren
-			--  - yinq - [Y]ank [I]nside [N]ext [']quote
-			--  - ci'  - [C]hange [I]nside [']quote
-			local ai = require 'mini.ai'
-			ai.setup {
-				n_lines = 500,
-				-- custom_textobjects = {
-				--   o = ai.gen_spec.treesitter({
-				--     a = { '@block.outer', '@conditional.outer', '@loop.outer' },
-				--     i = { '@block.inner', '@conditional.inner', '@loop.inner' },
-				--   }, {}),
-				--   f = ai.gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }, {}),
-				--   c = ai.gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }, {}),
-				--   t = { '<([%p%w]-)%f[^<%w][^<>]->.-</%1>', '^<.->().*()</[^/]->$' },
-				-- },
-			}
-
-			-- Add/delete/replace surroundings (brackets, quotes, etc.)
-			--
-			-- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-			-- - sd'   - [S]urround [D]elete [']quotes
-			-- - sr)'  - [S]urround [R]eplace [)] [']
-			require('mini.surround').setup()
-
-			-- Simple and easy statusline.
-			--  You could remove this setup call if you don't like it,
-			--  and try some other statusline plugin
-			-- local statusline = require 'mini.statusline'
-			-- statusline.setup()
-
-			-- You can configure sections in the statusline by overriding their
-			-- default behavior. For example, here we disable the section for
-			-- cursor information because line numbers are already enabled
-			---@diagnostic disable-next-line: duplicate-set-field
-			-- statusline.section_location = function()
-			-- return ''
-			-- end
-
-			-- require('mini.base16').setup({ palette = palette, use_cterm = true })
-
-			-- ... and there is more!
-			--  Check out: https://github.com/echasnovski/mini.nvim
-		end,
-	},
 	-- Highlight, edit, and navigate code
 	{
 		'nvim-treesitter/nvim-treesitter',
@@ -1123,7 +1111,7 @@ require('lazy').setup {
 				-- with gruvbox theme set this to false
 				-- highlight = { enable = false },
 				highlight = { enable = true },
-				indent = { enable = true },
+				-- indent = { enable = true },
 				incremental_selection = {
 					enable = true,
 					keymaps = {
@@ -1152,6 +1140,83 @@ require('lazy').setup {
 			--    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 		end,
 	},
+	{
+		'EricHenry/gruber-darker.nvim',
+		config = function()
+			require('gruber-darker').setup({
+				-- OPTIONAL
+				-- transparent = true, -- removes the background
+				-- underline = false, -- disables underline fonts
+				-- bold = false, -- disables bold fonts
+			})
+			-- vim.cmd.colorscheme('gruber-darker')
+		end,
+	},
+	{
+		"rebelot/kanagawa.nvim",
+		lazy = false, -- load at start
+		priority = 1000, -- load first
+		config = function()
+			vim.cmd("colorscheme kanagawa-dragon")
+
+			local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+			vim.api.nvim_set_hl(0, 'Comment', bools)
+			-- Make it clearly visible which argument we're at.
+			local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+			vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+
+		end,
+	},
+
+	{
+		"EricHenry/darcula-dark.nvim",
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter",
+		},
+		config = function()
+			-- vim.cmd("colorscheme darcula-dark")
+
+			-- Transparent background
+			-- vim.cmd("highlight Normal guibg=none")
+			-- vim.cmd("highlight NonText guibg=none")
+			-- vim.cmd("highlight Normal ctermbg=none")
+			-- vim.cmd("highlight NonText ctermbg=none")
+
+			-- gutter
+			-- vim.api.nvim_set_hl(0, "SignColumn", { bg = "#484848"})
+			-- vim.api.nvim_set_hl(0, "Background", { bg = "#2a2a2a"})
+			-- vim.api.nvim_set_hl(0, "CmpDocumentation", { fg = "#FFFFFF"})
+			-- vim.api.nvim_set_hl(0, "CmpItemMenu", { fg = "#FFFFFF" })
+		end,
+	},
+	{
+		"wincent/base16-nvim",
+		lazy = false, -- load at start
+		priority = 1000, -- load first
+		config = function()
+			-- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+			-- vim.o.background = 'dark'
+			-- XXX: hi Normal ctermbg=NONE
+			-- Make comments more prominent -- they are important.
+			-- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+			-- vim.api.nvim_set_hl(0, 'Comment', bools)
+			-- Make it clearly visible which argument we're at.
+			-- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+			-- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+			-- XXX
+			-- Would be nice to customize the highlighting of warnings and the like to make
+			-- them less glaring. But alas
+			-- https://github.com/nvim-lua/lsp_extensions.nvim/issues/21
+			-- call Base16hi("CocHintSign", g:base16_gui03, "", g:base16_cterm03, "", "", "")
+			--
+
+			-- Transparent background
+			-- vim.cmd("highlight Normal guibg=none")
+			-- vim.cmd("highlight NonText guibg=none")
+			-- vim.cmd("highlight Normal ctermbg=none")
+			-- vim.cmd("highlight NonText ctermbg=none")
+		end
+	},
 
 	-- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
 	-- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1174,3 +1239,4 @@ require('lazy').setup {
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
+vim.o.termguicolors = true
