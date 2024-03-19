@@ -514,7 +514,7 @@ require('lazy').setup {
 				builtin.find_files { cwd = vim.fn.stdpath 'config' }
 			end, { desc = '[S]earch [N]eovim files' })
 		end,
-	},	
+	},
 	-- inline function signatures
 	{
 		'ray-x/lsp_signature.nvim',
@@ -650,7 +650,6 @@ require('lazy').setup {
 		dependencies = { 'nvim-tree/nvim-web-devicons' },
 		config = function()
 			require('lualine').setup{
-				options = { theme = 'gruvbox' },
 				sections = {
 					lualine_a = {'mode'},
 					lualine_b = {'branch', 'diff', 'diagnostics'},
@@ -674,7 +673,7 @@ require('lazy').setup {
 	},
 	{
 		"tpope/vim-fugitive",
-		config = function() 
+		config = function()
 			vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
 
 			local ThePrimeagen_Fugitive = vim.api.nvim_create_augroup("ThePrimeagen_Fugitive", {})
