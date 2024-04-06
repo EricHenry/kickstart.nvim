@@ -354,22 +354,23 @@ require('lazy').setup {
 	-- after the plugin has been loaded:
 	--  config = function() ... end
 
-	{ -- Useful plugin to show you pending keybinds.
-		'folke/which-key.nvim',
-		event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-		config = function() -- This is the function that runs, AFTER loading
-			require('which-key').setup()
-
-			-- Document existing key chains
-			require('which-key').register {
-				['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-				['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-				['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-				['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-				['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-			}
-		end,
-	},
+	-- Useful plugin to show you pending keybinds.
+	-- {
+	-- 	'folke/which-key.nvim',
+	-- 	event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+	-- 	config = function() -- This is the function that runs, AFTER loading
+	-- 		require('which-key').setup()
+	--
+	-- 		-- Document existing key chains
+	-- 		require('which-key').register {
+	-- 			['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+	-- 			['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+	-- 			['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+	-- 			['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+	-- 			['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+	-- 		}
+	-- 	end,
+	-- },
 
 	-- NOTE: Plugins can specify dependencies.
 	--
@@ -431,29 +432,29 @@ require('lazy').setup {
 				-- You can put your default mappings / updates / etc. in here
 				--  All the info you're looking for is in `:help telescope.setup()`
 				--
-				-- defaults = {
-				--   mappings = {
-				--     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-				--   },
-				-- },
-				defaults = vim.tbl_extend(
-					'force',
-					require('telescope.themes').get_ivy(), -- or get_cursor, get_dropdown
-					{
-						layout_config = {
-							height = 0.2,
-						},
-						--- your own `default` options go here, e.g.:
-						-- path_display = {
-						--   truncate = 2,
-						-- },
-						mappings = {
-							i = {
-								['<c-[>'] = actions.close,
-							},
-						},
-					}
-				),
+				defaults = {
+				  mappings = {
+				    i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+				  },
+				},
+				-- defaults = vim.tbl_extend(
+				-- 	'force',
+				-- 	require('telescope.themes').get_ivy(), -- or get_cursor, get_dropdown
+				-- 	{
+				-- 		layout_config = {
+				-- 			height = 0.2,
+				-- 		},
+				-- 		--- your own `default` options go here, e.g.:
+				-- 		-- path_display = {
+				-- 		--   truncate = 2,
+				-- 		-- },
+				-- 		mappings = {
+				-- 			i = {
+				-- 				['<c-[>'] = actions.close,
+				-- 			},
+				-- 		},
+				-- 	}
+				-- ),
 				pickers = {
 					buffers = {
 						mappings = {
@@ -464,9 +465,9 @@ require('lazy').setup {
 					},
 				},
 				extensions = {
-					['ui-select'] = {
-						require('telescope.themes').get_ivy(),
-					},
+					-- ['ui-select'] = {
+					-- 	require('telescope.themes').get_ivy(),
+					-- },
 				},
 			}
 
@@ -518,7 +519,7 @@ require('lazy').setup {
 	-- inline function signatures
 	{
 		'ray-x/lsp_signature.nvim',
-		event = 'VeryLazy',
+		-- event = 'VeryLazy',
 		opts = {},
 		config = function(_, opts)
 			-- Get signatures (and _only_ signatures) when in argument lists.
@@ -652,13 +653,15 @@ require('lazy').setup {
 			require('lualine').setup{
 				sections = {
 					lualine_a = {'mode'},
-					lualine_b = {'branch', 'diff', 'diagnostics'},
+					-- lualine_b = {'branch', 'diff', 'diagnostics'},
+					lualine_b = {},
 					lualine_c = {
 						'filename',
 						function()
 							return vim.fn['nvim_treesitter#statusline'](180)
 						end},
-					lualine_x = {'encoding', 'fileformat', 'filetype'},
+					-- lualine_x = {'encoding', 'fileformat', 'filetype'},
+					lualine_x = {'diagnostics', 'branch'},
 					lualine_y = {'progress'},
 					lualine_z = {'location'}
 				},
@@ -714,10 +717,8 @@ require('lazy').setup {
 		version = "*",  -- Use the latest tagged version
 		opts = {},  -- This causes the plugin setup function to be called
 		keys = {
-			{"<C-Down>", "<Cmd>MultipleCursorsAddDown<CR>", mode = {"n", "i"}},
-			{"<A-c>", "<Cmd>MultipleCursorsAddDown<CR>"},
-			-- {"<C-Up>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
-			-- {"<C-k>", "<Cmd>MultipleCursorsAddUp<CR>"},
+			{"<C-s>", "<Cmd>MultipleCursorsAddDown<CR>", mode = {"n", "i"}},
+			-- {"<C-S>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
 			{"<C-LeftMouse>", "<Cmd>MultipleCursorsMouseAddDelete<CR>", mode = {"n", "i"}},
 			{"<Leader>a", "<Cmd>MultipleCursorsAddMatches<CR>", mode = {"n", "x"}},
 			{"<Leader>A", "<Cmd>MultipleCursorsAddMatchesV<CR>", mode = {"n", "x"}},
@@ -1144,11 +1145,53 @@ require('lazy').setup {
 		config = function()
 			require('gruber-darker').setup({
 				-- OPTIONAL
-				-- transparent = true, -- removes the background
+				transparent = true, -- removes the background
 				-- underline = false, -- disables underline fonts
 				-- bold = false, -- disables bold fonts
 			})
 			-- vim.cmd.colorscheme('gruber-darker')
+
+			-- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+			-- vim.api.nvim_set_hl(0, 'Comment', bools)
+			-- -- Make it clearly visible which argument we're at.
+			-- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+			-- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+		end,
+	},
+	{
+		"kvrohit/rasmus.nvim",
+		lazy = false, -- load at start
+		priority = 1000, -- load first
+		config = function()
+			-- vim.cmd("colorscheme rasmus")
+
+			-- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+			-- vim.api.nvim_set_hl(0, 'Comment', bools)
+			-- -- Make it clearly visible which argument we're at.
+			-- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+			-- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+			--
+		end,
+	},
+	{
+		"rose-pine/neovim",
+		name = "rose-pine",
+		config = function()
+			require('rose-pine').setup({
+				disable_background = true,
+			})
+
+			-- vim.cmd("colorscheme rose-pine")
+
+			-- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+			-- vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+
+			-- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+			-- vim.api.nvim_set_hl(0, 'Comment', bools)
+			-- -- Make it clearly visible which argument we're at.
+			-- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+			-- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+
 		end,
 	},
 	{
@@ -1158,64 +1201,15 @@ require('lazy').setup {
 		config = function()
 			vim.cmd("colorscheme kanagawa-dragon")
 
-			local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-			vim.api.nvim_set_hl(0, 'Comment', bools)
-			-- Make it clearly visible which argument we're at.
-			local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-			vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-
-		end,
-	},
-
-	{
-		"EricHenry/darcula-dark.nvim",
-		dependencies = {
-			"nvim-treesitter/nvim-treesitter",
-		},
-		config = function()
-			-- vim.cmd("colorscheme darcula-dark")
-
-			-- Transparent background
-			-- vim.cmd("highlight Normal guibg=none")
-			-- vim.cmd("highlight NonText guibg=none")
-			-- vim.cmd("highlight Normal ctermbg=none")
-			-- vim.cmd("highlight NonText ctermbg=none")
-
-			-- gutter
-			-- vim.api.nvim_set_hl(0, "SignColumn", { bg = "#484848"})
-			-- vim.api.nvim_set_hl(0, "Background", { bg = "#2a2a2a"})
-			-- vim.api.nvim_set_hl(0, "CmpDocumentation", { fg = "#FFFFFF"})
-			-- vim.api.nvim_set_hl(0, "CmpItemMenu", { fg = "#FFFFFF" })
-		end,
-	},
-	{
-		"wincent/base16-nvim",
-		lazy = false, -- load at start
-		priority = 1000, -- load first
-		config = function()
-			-- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-			-- vim.o.background = 'dark'
-			-- XXX: hi Normal ctermbg=NONE
-			-- Make comments more prominent -- they are important.
 			-- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
 			-- vim.api.nvim_set_hl(0, 'Comment', bools)
-			-- Make it clearly visible which argument we're at.
+			-- -- Make it clearly visible which argument we're at.
 			-- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
 			-- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-			-- XXX
-			-- Would be nice to customize the highlighting of warnings and the like to make
-			-- them less glaring. But alas
-			-- https://github.com/nvim-lua/lsp_extensions.nvim/issues/21
-			-- call Base16hi("CocHintSign", g:base16_gui03, "", g:base16_cterm03, "", "", "")
-			--
 
-			-- Transparent background
-			-- vim.cmd("highlight Normal guibg=none")
-			-- vim.cmd("highlight NonText guibg=none")
-			-- vim.cmd("highlight Normal ctermbg=none")
-			-- vim.cmd("highlight NonText ctermbg=none")
-		end
+		end,
 	},
+
 
 	-- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
 	-- init.lua. If you want these files, they are in the repository, so you can just download them and
