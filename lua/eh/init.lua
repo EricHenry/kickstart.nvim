@@ -70,8 +70,8 @@ autocmd('LspAttach', {
 		map('K', vim.lsp.buf.hover, 'Hover Documentation')
 		map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 		map('<leader>F', function()
-			-- vim.lsp.buf.format { async = true }
-			require('conform').format()
+			vim.lsp.buf.format { async = true }
+			-- require('conform').format()
 		end, 'Format Code')
 
 		-- The following two autocommands are used to highlight references of the
@@ -95,7 +95,7 @@ autocmd('LspAttach', {
 		-- None of this semantics tokens business.
 		-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
 		-- if client and client.server_capabilities.semanticTokensProvider then
-		-- 	client.server_capabilities.semanticTokensProvider = nil
+			-- client.server_capabilities.semanticTokensProvider = nil
 		-- end
 	end,
 })
