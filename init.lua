@@ -436,24 +436,24 @@ require('lazy').setup {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        defaults = vim.tbl_extend(
-          'force',
-          require('telescope.themes').get_ivy(), -- or get_cursor, get_dropdown
-          {
-            layout_config = {
-              height = 0.2,
-            },
-            --- your own `default` options go here, e.g.:
-            -- path_display = {
-            --   truncate = 2,
-            -- },
-            mappings = {
-              i = {
-                ['<c-[>'] = actions.close,
-              },
-            },
-          }
-        ),
+        -- defaults = vim.tbl_extend(
+        --   'force',
+        --   require('telescope.themes').get_ivy(), -- or get_cursor, get_dropdown
+        --   {
+        --     layout_config = {
+        --       height = 0.2,
+        --     },
+        --     --- your own `default` options go here, e.g.:
+        --     -- path_display = {
+        --     --   truncate = 2,
+        --     -- },
+        --     mappings = {
+        --       i = {
+        --         ['<c-[>'] = actions.close,
+        --       },
+        --     },
+        --   }
+        -- ),
         pickers = {
           buffers = {
             mappings = {
