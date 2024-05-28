@@ -160,7 +160,8 @@ vim.opt.scrolloff = 10
 --" Decent wildmenu
 -- in completion, when there is more than one match,
 -- list all matches, and only complete to longest common match
-vim.opt.wildmode = 'list:longest'
+-- vim.opt.wildmode = 'list:longest'
+vim.opt.wildmode = 'list:longest,full'
 -- when opening a file with a command (like :e),
 -- don't suggest files like there:
 vim.opt.wildignore = '.hg,.svn,*~,*.png,*.jpg,*.gif,*.min.js,*.swp,*.o,vendor,dist,_site'
