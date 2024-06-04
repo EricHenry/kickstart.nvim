@@ -429,7 +429,7 @@ require('lazy').setup {
 	-- See `:help gitsigns` to understand what the configuration keys do
 	{ -- Adds git related signs to the gutter, as well as utilities for managing changes
 		'lewis6991/gitsigns.nvim',
-		-- opts = {
+		opts = {
 		-- 	signs = {
 		-- 		add = { text = '+' },
 		-- 		change = { text = '~' },
@@ -437,7 +437,7 @@ require('lazy').setup {
 		-- 		topdelete = { text = '‾' },
 		-- 		changedelete = { text = '~' },
 		-- 	},
-		-- },
+		},
 	},
 
 	-- NOTE: Plugins can also be configured to run lua code when they are loaded.
@@ -1002,8 +1002,8 @@ require('lazy').setup {
 				-- Autoinstall languages that are not installed
 				auto_install = true,
 				-- with gruvbox theme set this to false
-				-- highlight = { enable = false },
-				highlight = { enable = true },
+				highlight = { enable = false },
+				-- highlight = { enable = true },
 				-- indent = { enable = true },
 				incremental_selection = {
 					enable = true,
@@ -1033,42 +1033,45 @@ require('lazy').setup {
 			--    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 		end,
 	},
-	-- {
-	-- 	"wincent/base16-nvim",
-	-- 	lazy = false, -- load at start
-	-- 	priority = 1000, -- load first
-	-- 	config = function()
-	-- 		vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-	-- 		vim.o.background = 'dark'
-	-- 		-- XXX: hi Normal ctermbg=NONE
-	-- 		-- Make comments more prominent -- they are important.
-	-- 		local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-	-- 		vim.api.nvim_set_hl(0, 'Comment', bools)
-	-- 		-- Make it clearly visible which argument we're at.
-	-- 		local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-	-- 		vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-	-- 			{ fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-	-- 		-- XXX
-	-- 		-- Would be nice to customize the highlighting of warnings and the like to make
-	-- 		-- them less glaring. But alas
-	-- 		-- https://github.com/nvim-lua/lsp_extensions.nvim/issues/21
-	-- 		-- call Base16hi("CocHintSign", g:base16_gui03, "", g:base16_cterm03, "", "", "")
-	-- 	end
-	-- },
 	{
-		'ellisonleao/gruvbox.nvim',
+		"wincent/base16-nvim",
+		lazy = false, -- load at start
+		priority = 1000, -- load first
 		config = function()
-            vim.o.background = "dark" -- or "light" for light mode
-            vim.cmd([[colorscheme gruvbox]])
-			-- require('gruber-darker').setup {
-			-- OPTIONAL
-			-- transparent = true, -- removes the background
-			-- underline = false, -- disables underline fonts
-			-- bold = false, -- disables bold fonts
-			-- }
-			-- vim.cmd.colorscheme('gruber-darker')
-		end,
+			vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+			vim.o.background = 'dark'
+			-- XXX: hi Normal ctermbg=NONE
+			-- Make comments more prominent -- they are important.
+			local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+			vim.api.nvim_set_hl(0, 'Comment', bools)
+			-- Make it clearly visible which argument we're at.
+			local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+			vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+				{ fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+			-- XXX
+			-- Would be nice to customize the highlighting of warnings and the like to make
+			-- them less glaring. But alas
+			-- https://github.com/nvim-lua/lsp_extensions.nvim/issues/21
+			-- call Base16hi("CocHintSign", g:base16_gui03, "", g:base16_cterm03, "", "", "")
+		end
 	},
+	-- {
+	-- 	'ellisonleao/gruvbox.nvim',
+	-- 	config = function()
+	--            -- require("gruvbox").setup({
+	--            --     -- contrast = "hard"
+	--            -- })
+	--            -- vim.o.background = "dark" -- or "light" for light mode
+	--            -- vim.cmd([[colorscheme gruvbox]])
+	-- 		-- require('gruber-darker').setup {
+	-- 		-- OPTIONAL
+	-- 		-- transparent = true, -- removes the background
+	-- 		-- underline = false, -- disables underline fonts
+	-- 		-- bold = false, -- disables bold fonts
+	-- 		-- }
+	-- 		-- vim.cmd.colorscheme('gruber-darker')
+	-- 	end,
+	-- },
     {
 		'EricHenry/gruber-darker.nvim',
 		config = function()
