@@ -349,9 +349,9 @@ autocmd('LspAttach', {
 
         -- None of this semantics tokens business.
         -- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-        -- if client and client.server_capabilities.semanticTokensProvider then
-        --     client.server_capabilities.semanticTokensProvider = nil
-        -- end
+        if client and client.server_capabilities.semanticTokensProvider then
+            client.server_capabilities.semanticTokensProvider = nil
+        end
     end,
 })
 
@@ -559,6 +559,9 @@ require('lazy').setup {
                     }
                 ),
                 pickers = {
+                    find_files = {
+                        hidden = true,
+                    },
                     buffers = {
                         mappings = {
                             i = {
@@ -681,7 +684,7 @@ require('lazy').setup {
     {
         'brenton-leighton/multiple-cursors.nvim',
         version = '*', -- Use the latest tagged version
-        opts = {}, -- This causes the plugin setup function to be called
+        opts = {},     -- This causes the plugin setup function to be called
         keys = {
             { '<C-Down>',      '<Cmd>MultipleCursorsAddDown<CR>',          mode = { 'n', 'i' } },
             { '<A-c>',         '<Cmd>MultipleCursorsAddDown<CR>' },
@@ -693,6 +696,26 @@ require('lazy').setup {
             { '<Leader>d',     '<Cmd>MultipleCursorsAddJumpNextMatch<CR>', mode = { 'n', 'x' } },
             { '<Leader>D',     '<Cmd>MultipleCursorsJumpNextMatch<CR>' },
         },
+    },
+    {
+        "folke/trouble.nvim",
+        config = function()
+            require("trouble").setup({
+                icons = false,
+            })
+
+            vim.keymap.set("n", "<leader>tt", function()
+                require("trouble").toggle()
+            end)
+
+            vim.keymap.set("n", "[t", function()
+                require("trouble").next({ skip_groups = true, jump = true });
+            end)
+
+            vim.keymap.set("n", "]t", function()
+                require("trouble").previous({ skip_groups = true, jump = true });
+            end)
+        end
     },
     {
         'christoomey/vim-tmux-navigator',
@@ -1002,8 +1025,8 @@ require('lazy').setup {
                 -- Autoinstall languages that are not installed
                 auto_install = true,
                 -- with gruvbox theme set this to false
-                -- highlight = { enable = false },
-                highlight = { enable = true },
+                highlight = { enable = false },
+                -- highlight = { enable = true },
                 -- indent = { enable = true },
                 incremental_selection = {
                     enable = true,
@@ -1035,19 +1058,19 @@ require('lazy').setup {
     },
     {
         "wincent/base16-nvim",
-        lazy = false, -- load at start
+        lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            -- vim.o.background = 'dark'
-            -- -- XXX: hi Normal ctermbg=NONE
-            -- -- Make comments more prominent -- they are important.
+            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+            vim.o.background = 'dark'
+            -- XXX: hi Normal ctermbg=NONE
+            -- Make comments more prominent -- they are important.
             -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
             -- vim.api.nvim_set_hl(0, 'Comment', bools)
-            -- -- Make it clearly visible which argument we're at.
-            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-            -- 	{ fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+            -- Make it clearly visible which argument we're at.
+            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
             -- XXX
             -- Would be nice to customize the highlighting of warnings and the like to make
             -- them less glaring. But alas
@@ -1058,18 +1081,47 @@ require('lazy').setup {
     {
         'ellisonleao/gruvbox.nvim',
         config = function()
-            require("gruvbox").setup({
-                contrast = "hard"
-            })
-            vim.o.background = "dark" -- or "light" for light mode
-            vim.cmd([[colorscheme gruvbox]])
-            -- require('gruber-darker').setup {
-            -- OPTIONAL
-            -- transparent = true, -- removes the background
-            -- underline = false, -- disables underline fonts
-            -- bold = false, -- disables bold fonts
-            -- }
-            -- vim.cmd.colorscheme('gruber-darker')
+            -- require("gruvbox").setup({
+            --     contrast = "hard"
+            -- })
+            -- vim.o.background = "dark" -- or "light" for light mode
+            -- vim.cmd([[colorscheme gruvbox]])
+        end,
+    },
+    {
+        'NTBBloodbath/doom-one.nvim',
+        config = function()
+            -- Add color to cursor
+            vim.g.doom_one_cursor_coloring = false
+            -- Set :terminal colors
+            vim.g.doom_one_terminal_colors = true
+            -- Enable italic comments
+            vim.g.doom_one_italic_comments = false
+            -- Enable TS support
+            vim.g.doom_one_enable_treesitter = true
+            -- Color whole diagnostic text or only underline
+            vim.g.doom_one_diagnostics_text_color = false
+            -- Enable transparent background
+            vim.g.doom_one_transparent_background = false
+
+            -- Pumblend transparency
+            vim.g.doom_one_pumblend_enable = false
+            vim.g.doom_one_pumblend_transparency = 20
+
+            -- Plugins integration
+            vim.g.doom_one_plugin_neorg = true
+            vim.g.doom_one_plugin_barbar = false
+            vim.g.doom_one_plugin_telescope = false
+            vim.g.doom_one_plugin_neogit = true
+            vim.g.doom_one_plugin_nvim_tree = true
+            vim.g.doom_one_plugin_dashboard = true
+            vim.g.doom_one_plugin_startify = true
+            vim.g.doom_one_plugin_whichkey = true
+            vim.g.doom_one_plugin_indent_blankline = true
+            vim.g.doom_one_plugin_vim_illuminate = true
+            vim.g.doom_one_plugin_lspsaga = false
+
+            -- vim.cmd("colorscheme doom-one")
         end,
     },
     {
@@ -1086,7 +1138,7 @@ require('lazy').setup {
     },
     {
         'rebelot/kanagawa.nvim',
-        lazy = false, -- load at start
+        lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
             -- vim.cmd 'colorscheme kanagawa-dragon'
