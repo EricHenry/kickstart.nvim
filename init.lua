@@ -439,6 +439,16 @@ require('lazy').setup {
             -- 	},
         },
     },
+    {
+        "kylechui/nvim-surround",
+        version = "*", -- Use for stability; omit to use `main` branch for the latest features
+        event = "VeryLazy",
+        config = function()
+            require("nvim-surround").setup({
+                -- Configuration here, or leave empty to use defaults
+            })
+        end
+    },
 
     -- NOTE: Plugins can also be configured to run lua code when they are loaded.
     --
@@ -455,22 +465,22 @@ require('lazy').setup {
     -- after the plugin has been loaded:
     --  config = function() ... end
 
-    -- { -- Useful plugin to show you pending keybinds.
-    -- 	'folke/which-key.nvim',
-    -- 	event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    -- 	config = function() -- This is the function that runs, AFTER loading
-    -- 		require('which-key').setup()
-    --
-    -- 		-- Document existing key chains
-    -- 		require('which-key').register {
-    -- 			['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-    -- 			['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-    -- 			['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-    -- 			['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-    -- 			['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-    -- 		}
-    -- 	end,
-    -- },
+    {                       -- Useful plugin to show you pending keybinds.
+        'folke/which-key.nvim',
+        event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+        config = function() -- This is the function that runs, AFTER loading
+            require('which-key').setup()
+
+            -- Document existing key chains
+            require('which-key').register {
+                ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+                ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+                ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+                ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+                ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+            }
+        end,
+    },
 
     -- NOTE: Plugins can specify dependencies.
     --
@@ -664,21 +674,22 @@ require('lazy').setup {
                     local opts = { buffer = bufnr, remap = false }
                     vim.keymap.set('n', '<leader>p', function()
                         vim.cmd.Git 'push'
-                    end, opts)
+                    end, { buffer = bufnr, remap = false, desc = '[ ] Git push' })
 
                     -- rebase always
                     vim.keymap.set('n', '<leader>P', function()
                         vim.cmd.Git { 'pull', '--rebase' }
-                    end, opts)
+                    end, { buffer = bufnr, remap = false, desc = '[ ] Git pull --rebase' })
 
                     -- NOTE: It allows me to easily set the branch i am pushing and any tracking
                     -- needed if i did not set the branch up correctly
-                    vim.keymap.set('n', '<leader>t', ':Git push -u origin ', opts)
+                    vim.keymap.set('n', '<leader>t', ':Git push -u origin ',
+                        { buffer = bufnr, remap = false, desc = '[ ] :Git push -u origin ' })
                 end,
             })
 
-            vim.keymap.set('n', 'gu', '<cmd>diffget //2<CR>')
-            vim.keymap.set('n', 'gh', '<cmd>diffget //3<CR>')
+            vim.keymap.set('n', 'gu', '<cmd>diffget //2<CR>', { desc = '[ ] Diffget 2' })
+            vim.keymap.set('n', 'gh', '<cmd>diffget //3<CR>', { desc = '[ ] Diffget 3' })
         end,
     },
     {
