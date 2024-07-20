@@ -171,6 +171,7 @@ vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
+vim.opt.laststatus = 2
 
 -------------------------------------------------------------------------------
 --
@@ -349,9 +350,9 @@ autocmd('LspAttach', {
 
         -- None of this semantics tokens business.
         -- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-        -- if client and client.server_capabilities.semanticTokensProvider then
-        --     client.server_capabilities.semanticTokensProvider = nil
-        -- end
+        if client and client.server_capabilities.semanticTokensProvider then
+            client.server_capabilities.semanticTokensProvider = nil
+        end
     end,
 })
 
@@ -469,15 +470,18 @@ require('lazy').setup {
         'folke/which-key.nvim',
         event = 'VimEnter', -- Sets the loading event to 'VimEnter'
         config = function() -- This is the function that runs, AFTER loading
-            require('which-key').setup()
+            require('which-key').setup({
+                preset = 'helix',
+                icons = { mappings = false, rules = false }
+            })
 
             -- Document existing key chains
-            require('which-key').register {
-                ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-                ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-                ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-                ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-                ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+            require('which-key').add {
+                { '<leader>c', { group = '[C]ode' } },
+                { '<leader>d', { group = '[D]ocument' } },
+                { '<leader>r', { group = '[R]ename' } },
+                { '<leader>s', { group = '[S]earch' } },
+                { '<leader>w', { group = '[W]orkspace' } },
             }
         end,
     },
@@ -692,42 +696,142 @@ require('lazy').setup {
             vim.keymap.set('n', 'gh', '<cmd>diffget //3<CR>', { desc = '[ ] Diffget 3' })
         end,
     },
+    -- nice bar at the bottom
     {
-        'brenton-leighton/multiple-cursors.nvim',
-        version = '*', -- Use the latest tagged version
-        opts = {},     -- This causes the plugin setup function to be called
-        keys = {
-            { '<C-c>',         '<Cmd>MultipleCursorsAddDown<CR>',          mode = { 'n', 'i' } },
-            { '<C-c>',         '<Cmd>MultipleCursorsAddDown<CR>' },
-            -- {"<C-Up>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
-            -- {"<C-k>", "<Cmd>MultipleCursorsAddUp<CR>"},
-            { '<C-LeftMouse>', '<Cmd>MultipleCursorsMouseAddDelete<CR>',   mode = { 'n', 'i' } },
-            { '<Leader>a',     '<Cmd>MultipleCursorsAddMatches<CR>',       mode = { 'n', 'x' } },
-            { '<Leader>A',     '<Cmd>MultipleCursorsAddMatchesV<CR>',      mode = { 'n', 'x' } },
-            { '<Leader>d',     '<Cmd>MultipleCursorsAddJumpNextMatch<CR>', mode = { 'n', 'x' } },
-            { '<Leader>D',     '<Cmd>MultipleCursorsJumpNextMatch<CR>' },
-        },
-    },
-    {
-        "folke/trouble.nvim",
+        'itchyny/lightline.vim',
+        lazy = false, -- also load at start since it's UI
         config = function()
-            require("trouble").setup({
-                icons = false,
-            })
+            -- no need to also show mode in cmd line when we have bar
+            vim.o.showmode = false
+            vim.g.lightline = {
+                active = {
+                    left = {
+                        { 'mode',     'paste' },
+                        { 'readonly', 'filename', 'modified' }
+                    },
+                    right = {
+                        { 'lineinfo' },
+                        { 'percent' },
+                        { 'fileencoding', 'filetype' }
+                    },
+                },
+                component_function = {
+                    filename = 'LightlineFilename'
+                },
+            }
+            function LightlineFilenameInLua(opts)
+                if vim.fn.expand('%:t') == '' then
+                    return '[No Name]'
+                else
+                    return vim.fn.getreg('%')
+                end
+            end
 
-            vim.keymap.set("n", "<leader>tt", function()
-                require("trouble").toggle()
-            end)
-
-            vim.keymap.set("n", "[t", function()
-                require("trouble").next({ skip_groups = true, jump = true });
-            end)
-
-            vim.keymap.set("n", "]t", function()
-                require("trouble").previous({ skip_groups = true, jump = true });
-            end)
+            -- https://github.com/itchyny/lightline.vim/issues/657
+            vim.api.nvim_exec(
+                [[
+				function! g:LightlineFilename()
+					return v:lua.LightlineFilenameInLua()
+				endfunction
+				]],
+                true
+            )
         end
     },
+    {
+        "smoka7/multicursors.nvim",
+        event = "VeryLazy",
+        dependencies = {
+            'nvimtools/hydra.nvim',
+        },
+        opts = {},
+        cmd = { 'MCstart', 'MCvisual', 'MCclear', 'MCpattern', 'MCvisualPattern', 'MCunderCursor' },
+        keys = {
+            {
+                mode = { 'v', 'n' },
+                '<Leader>m',
+                '<cmd>MCstart<cr>',
+                desc = 'Create a selection for selected text or word under the cursor',
+            },
+        },
+    },
+    -- {
+    --     'brenton-leighton/multiple-cursors.nvim',
+    --     version = '*', -- Use the latest tagged version
+    --     opts = {},     -- This causes the plugin setup function to be called
+    --     keys = {
+    --         { '<C-c>',         '<Cmd>MultipleCursorsAddDown<CR>',          mode = { 'n', 'i' } },
+    --         { '<C-c>',         '<Cmd>MultipleCursorsAddDown<CR>' },
+    --         -- {"<C-Up>", "<Cmd>MultipleCursorsAddUp<CR>", mode = {"n", "i"}},
+    --         -- {"<C-k>", "<Cmd>MultipleCursorsAddUp<CR>"},
+    --         { '<C-LeftMouse>', '<Cmd>MultipleCursorsMouseAddDelete<CR>',   mode = { 'n', 'i' } },
+    --         { '<Leader>a',     '<Cmd>MultipleCursorsAddMatches<CR>',       mode = { 'n', 'x' } },
+    --         { '<Leader>A',     '<Cmd>MultipleCursorsAddMatchesV<CR>',      mode = { 'n', 'x' } },
+    --         { '<Leader>d',     '<Cmd>MultipleCursorsAddJumpNextMatch<CR>', mode = { 'n', 'x' } },
+    --         { '<Leader>D',     '<Cmd>MultipleCursorsJumpNextMatch<CR>' },
+    --     },
+    -- },
+    {
+        "folke/trouble.nvim",
+        opts = {}, -- for default options, refer to the configuration section for custom setup.
+        cmd = "Trouble",
+        config = function()
+            require('trouble').setup()
+            require('trouble.format').formatters.file_icon = function() return "" end
+        end,
+        keys = {
+            {
+                "<leader>xx",
+                "<cmd>Trouble diagnostics toggle<cr>",
+                desc = "Diagnostics (Trouble)",
+            },
+            {
+                "<leader>xX",
+                "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+                desc = "Buffer Diagnostics (Trouble)",
+            },
+            {
+                "<leader>cs",
+                "<cmd>Trouble symbols toggle focus=false<cr>",
+                desc = "Symbols (Trouble)",
+            },
+            {
+                "<leader>cl",
+                "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+                desc = "LSP Definitions / references / ... (Trouble)",
+            },
+            {
+                "<leader>xL",
+                "<cmd>Trouble loclist toggle<cr>",
+                desc = "Location List (Trouble)",
+            },
+            {
+                "<leader>xQ",
+                "<cmd>Trouble qflist toggle<cr>",
+                desc = "Quickfix List (Trouble)",
+            },
+        },
+    },
+    -- {
+    --     "folke/trouble.nvim",
+    --     config = function()
+    --         require("trouble").setup({
+    --             icons = false,
+    --         })
+    --
+    --         vim.keymap.set("n", "<leader>tt", function()
+    --             require("trouble").toggle()
+    --         end)
+    --
+    --         vim.keymap.set("n", "[t", function()
+    --             require("trouble").next({ skip_groups = true, jump = true });
+    --         end)
+    --
+    --         vim.keymap.set("n", "]t", function()
+    --             require("trouble").previous({ skip_groups = true, jump = true });
+    --         end)
+    --     end
+    -- },
     {
         'christoomey/vim-tmux-navigator',
         cmd = {
@@ -1039,8 +1143,8 @@ require('lazy').setup {
                 auto_install = true,
                 -- with gruvbox theme set this to false
                 -- highlight = { enable = false },
-                highlight = { enable = true },
-                -- indent = { enable = true },
+                -- highlight = { enable = true },
+                indent = { enable = true },
                 incremental_selection = {
                     enable = true,
                     keymaps = {
@@ -1076,32 +1180,32 @@ require('lazy').setup {
         config = function()
             -- Default options:
             require('kanagawa').setup({
-                compile = false, -- enable compiling the colorscheme
+                compile = false,  -- enable compiling the colorscheme
                 undercurl = true, -- enable undercurls
                 commentStyle = { italic = true },
                 functionStyle = {},
                 keywordStyle = { italic = true },
                 statementStyle = { bold = true },
                 typeStyle = {},
-                transparent = false, -- do not set background color
-                dimInactive = false, -- dim inactive window `:h hl-NormalNC`
+                transparent = false,   -- do not set background color
+                dimInactive = false,   -- dim inactive window `:h hl-NormalNC`
                 terminalColors = true, -- define vim.g.terminal_color_{0,17}
-                colors = { -- add/modify theme and palette colors
+                colors = {             -- add/modify theme and palette colors
                     palette = {},
                     theme = { wave = {}, lotus = {}, dragon = {}, all = {} },
                 },
                 overrides = function(colors) -- add/modify highlights
                     return {}
                 end,
-                theme = "dragon", -- Load "wave" theme when 'background' option is not set
-                background = { -- map the value of 'background' option to a theme
+                theme = "dragon",    -- Load "wave" theme when 'background' option is not set
+                background = {       -- map the value of 'background' option to a theme
                     dark = "dragon", -- try "dragon" !
                     light = "lotus"
                 },
             })
 
             -- setup must be called before loading
-            vim.cmd("colorscheme kanagawa")
+            -- vim.cmd("colorscheme kanagawa")
         end
     },
     {
@@ -1109,25 +1213,30 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            -- vim.o.background = 'dark'
+            vim.o.background = 'dark'
+            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
             -- XXX: hi Normal ctermbg=NONE
             -- Make comments more prominent -- they are important.
             -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
             -- vim.api.nvim_set_hl(0, 'Comment', bools)
             -- Make it clearly visible which argument we're at.
-            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            -- XXX
-            -- Would be nice to customize the highlighting of warnings and the like to make
-            -- them less glaring. But alas
-            -- https://github.com/nvim-lua/lsp_extensions.nvim/issues/21
-            -- call Base16hi("CocHintSign", g:base16_gui03, "", g:base16_cterm03, "", "", "")
-            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
         end
     },
+    {
+        "amitds1997/remote-nvim.nvim",
+        version = "*",                  -- Pin to GitHub releases
+        dependencies = {
+            "nvim-lua/plenary.nvim",    -- For standard functions
+            "MunifTanjim/nui.nvim",     -- To build the plugin UI
+            "nvim-telescope/telescope.nvim", -- For picking b/w different remote methods
+        },
+        config = true,
+    }
     -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
     -- init.lua. If you want these files, they are in the repository, so you can just download them and
     -- put them in the right spots if you want.
