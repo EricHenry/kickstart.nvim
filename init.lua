@@ -315,19 +315,13 @@ autocmd('LspAttach', {
         -- Jump to the definition of the word under your cursor.
         --  This is where a variable was first declared, or where a function is defined, etc.
         --  To jump back, press <C-T>.
-        -- map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-        -- map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-        -- map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-        -- map('gy', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-        -- map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-        -- map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
         local fzf = require("fzf-lua")
-        map('gd', function() fzf.lsp_definitions() end, '[G]oto [D]efinition')
-        map('gr', function() fzf.lsp_references() end, '[G]oto [R]eferences')
-        map('gI', function() fzf.lsp_implementations() end, '[G]oto [I]mplementation')
-        map('gy', function() fzf.lsp_typedefs() end, 'Type [D]efinition')
-        map('<leader>ds', function() fzf.lsp_document_symbols() end, '[D]ocument [S]ymbols')
-        map('<leader>ws', function() fzf.lsp_live_workspace_symbols() end, '[W]orkspace [S]ymbols')
+        map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+        map('gr', fzf.lsp_references, '[G]oto [R]eferences')
+        map('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
+        map('gy', vim.lsp.buf.type_definition, 'Type [D]efinition')
+        map('<leader>ds', fzf.lsp_document_symbols, '[D]ocument [S]ymbols')
+        map('<leader>ws', fzf.lsp_live_workspace_symbols, '[W]orkspace [S]ymbols')
         map('<leader>r', vim.lsp.buf.rename, '[R]e[n]ame')
         map('<leader>a', vim.lsp.buf.code_action, '[C]ode [A]ction')
         map('K', vim.lsp.buf.hover, 'Hover Documentation')
@@ -415,6 +409,20 @@ require('lazy').setup {
     -- 		},
     -- 	},
     -- },
+    -- NOTE: Plugins can also be configured to run lua code when they are loaded.
+    --
+    -- This is often very useful to both group configuration, as well as handle
+    -- lazy loading plugins that don't need to be loaded immediately at startup.
+    --
+    -- For example, in the following configuration, we use:
+    --  event = 'VimEnter'
+    --
+    -- which loads which-key before all the UI elements are loaded. Events can be
+    -- normal autocommands events (`:help autocmd-events`).
+    --
+    -- Then, because we use the `config` key, the configuration only runs
+    -- after the plugin has been loaded:
+    --  config = function() ... end
     -- auto-cd to root of git project
     {
         'notjedi/nvim-rooter.lua',
@@ -452,21 +460,58 @@ require('lazy').setup {
             })
         end
     },
-
-    -- NOTE: Plugins can also be configured to run lua code when they are loaded.
-    --
-    -- This is often very useful to both group configuration, as well as handle
-    -- lazy loading plugins that don't need to be loaded immediately at startup.
-    --
-    -- For example, in the following configuration, we use:
-    --  event = 'VimEnter'
-    --
-    -- which loads which-key before all the UI elements are loaded. Events can be
-    -- normal autocommands events (`:help autocmd-events`).
-    --
-    -- Then, because we use the `config` key, the configuration only runs
-    -- after the plugin has been loaded:
-    --  config = function() ... end
+    -- {
+    --        'stevearc/oil.nvim',
+    --        opts = {},
+    --        config = function()
+    --            require("oil").setup({
+    --                columns = {
+    --                    "permissions",
+    --                    "size",
+    --                    "mtime",
+    --                },
+    --            })
+    --            vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+    --        end
+    --    },
+    {
+        'christoomey/vim-tmux-navigator',
+        cmd = {
+            'TmuxNavigateLeft',
+            'TmuxNavigateDown',
+            'TmuxNavigateUp',
+            'TmuxNavigateRight',
+            'TmuxNavigatePrevious',
+        },
+        keys = {
+            { '<c-h>',  '<cmd><C-U>TmuxNavigateLeft<cr>' },
+            { '<c-j>',  '<cmd><C-U>TmuxNavigateDown<cr>' },
+            { '<c-k>',  '<cmd><C-U>TmuxNavigateUp<cr>' },
+            { '<c-l>',  '<cmd><C-U>TmuxNavigateRight<cr>' },
+            { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+        },
+    },
+    -- inline function signatures
+    {
+        'ray-x/lsp_signature.nvim',
+        event = 'VeryLazy',
+        opts = {},
+        config = function(_, opts)
+            -- Get signatures (and _only_ signatures) when in argument lists.
+            require('lsp_signature').setup {
+                doc_lines = 0,
+                handler_opts = {
+                    border = 'none',
+                },
+            }
+        end,
+    },
+    {
+        'mbbill/undotree',
+        config = function()
+            vim.keymap.set('n', '<leader>u', vim.cmd.UndotreeToggle)
+        end,
+    },
 
     {                       -- Useful plugin to show you pending keybinds.
         'folke/which-key.nvim',
@@ -487,13 +532,6 @@ require('lazy').setup {
             }
         end,
     },
-
-    -- NOTE: Plugins can specify dependencies.
-    --
-    -- The dependencies are proper plugin specifications as well - anything
-    -- you do for a plugin at the top level, you can do for a dependency.
-    --
-    -- Use the `dependencies` key to specify the dependencies of a particular plugin
     {
         "ibhagwan/fzf-lua",
         -- optional for icon support
@@ -543,27 +581,6 @@ require('lazy').setup {
             end, { desc = '[S]earch [N]eovim files' })
         end
     },
-    -- inline function signatures
-    {
-        'ray-x/lsp_signature.nvim',
-        event = 'VeryLazy',
-        opts = {},
-        config = function(_, opts)
-            -- Get signatures (and _only_ signatures) when in argument lists.
-            require('lsp_signature').setup {
-                doc_lines = 0,
-                handler_opts = {
-                    border = 'none',
-                },
-            }
-        end,
-    },
-    {
-        'mbbill/undotree',
-        config = function()
-            vim.keymap.set('n', '<leader>u', vim.cmd.UndotreeToggle)
-        end,
-    },
     {
         'tpope/vim-fugitive',
         config = function()
@@ -601,23 +618,6 @@ require('lazy').setup {
             vim.keymap.set('n', 'gu', '<cmd>diffget //2<CR>', { desc = '[ ] Diffget 2' })
             vim.keymap.set('n', 'gh', '<cmd>diffget //3<CR>', { desc = '[ ] Diffget 3' })
         end,
-    },
-    {
-        'christoomey/vim-tmux-navigator',
-        cmd = {
-            'TmuxNavigateLeft',
-            'TmuxNavigateDown',
-            'TmuxNavigateUp',
-            'TmuxNavigateRight',
-            'TmuxNavigatePrevious',
-        },
-        keys = {
-            { '<c-h>',  '<cmd><C-U>TmuxNavigateLeft<cr>' },
-            { '<c-j>',  '<cmd><C-U>TmuxNavigateDown<cr>' },
-            { '<c-k>',  '<cmd><C-U>TmuxNavigateUp<cr>' },
-            { '<c-l>',  '<cmd><C-U>TmuxNavigateRight<cr>' },
-            { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
-        },
     },
     {
         'neovim/nvim-lspconfig',
@@ -912,9 +912,9 @@ require('lazy').setup {
                 -- Autoinstall languages that are not installed
                 auto_install = true,
                 -- with gruvbox theme set this to false
-                highlight = { enable = false },
-                -- highlight = { enable = true },
-                indent = { enable = true },
+                -- highlight = { enable = false },
+                highlight = { enable = true },
+                -- indent = { enable = true },
                 incremental_selection = {
                     enable = true,
                     keymaps = {
@@ -948,20 +948,118 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            vim.o.background = 'dark'
-            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+            -- vim.o.background = 'dark'
+            -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+
             -- XXX: hi Normal ctermbg=NONE
             -- Make comments more prominent -- they are important.
             -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
             -- vim.api.nvim_set_hl(0, 'Comment', bools)
+
             -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            --
+            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
         end
     },
+    {
+        "rebelot/kanagawa.nvim",
+        config = function()
+            require('kanagawa').setup({
+                compile = false, -- enable compiling the colorscheme
+                undercurl = true, -- enable undercurls
+                commentStyle = { italic = false },
+                functionStyle = {},
+                keywordStyle = { italic = false },
+                statementStyle = { bold = true },
+                typeStyle = {},
+                transparent = false, -- do not set background color
+                dimInactive = false, -- dim inactive window `:h hl-NormalNC`
+                terminalColors = true, -- define vim.g.terminal_color_{0,17}
+                colors = { -- add/modify theme and palette colors
+                    palette = {},
+                    theme = { wave = {}, lotus = {}, dragon = {}, all = {} },
+                },
+                overrides = function(colors) -- add/modify highlights
+                    return {}
+                end,
+                theme = "dragon", -- Load "wave" theme when 'background' option is not set
+                background = { -- map the value of 'background' option to a theme
+                    dark = "dragon", -- try "dragon" !
+                    light = "lotus"
+                },
+            })
+
+            -- setup must be called before loading
+            vim.cmd("colorscheme kanagawa")
+        end
+    },
+    {
+        "rose-pine/neovim",
+        name = "rose-pine",
+        config = function()
+            require('rose-pine').setup({
+                -- variant = "main", -- auto, main, moon, or dawn
+                -- dark_variant = "main", -- main, moon, or dawn
+                disable_background = true,
+                styles = {
+                    italic = false,
+                },
+            })
+            -- vim.cmd([[colorscheme rose-pine]])
+        end
+    },
+    {
+        "ellisonleao/gruvbox.nvim",
+        name = "gruvbox",
+        config = function()
+            require("gruvbox").setup({
+                terminal_colors = true, -- add neovim terminal colors
+                undercurl = true,
+                underline = false,
+                bold = true,
+                italic = {
+                    strings = false,
+                    emphasis = false,
+                    comments = false,
+                    operators = false,
+                    folds = false,
+                },
+                strikethrough = true,
+                invert_selection = false,
+                invert_signs = false,
+                invert_tabline = false,
+                invert_intend_guides = false,
+                inverse = true,    -- invert background for search, diffs, statuslines and errors
+                contrast = "hard", -- can be "hard", "soft" or empty string
+                palette_overrides = {},
+                overrides = {},
+                dim_inactive = false,
+                transparent_mode = true,
+            })
+
+            -- vim.o.background = "dark"
+            -- vim.cmd([[colorscheme gruvbox]])
+        end,
+    },
+    {
+        'projekt0n/github-nvim-theme',
+        lazy = false,    -- make sure we load this during startup if it is your main colorscheme
+        priority = 1000, -- make sure to load this before all the other start plugins
+        config = function()
+            require('github-theme').setup({
+                options = {
+                    transparent = true,
+                }
+            })
+
+            -- vim.cmd('colorscheme github_dark_dimmed')
+            -- vim.cmd('colorscheme github_dark_default')
+        end,
+    }
     -- {
     --     "amitds1997/remote-nvim.nvim",
     --     version = "*",                       -- Pin to GitHub releases
