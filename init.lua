@@ -190,10 +190,14 @@ vim.keymap.set('n', 'ga', '<cmd>e #<cr>', { desc = 'Switch to Other Buffer' })
 -- open new file adjacent to current file
 vim.keymap.set('n', '<leader>o', ':e <C-R>=expand("%:p:h") . "/" <cr>')
 
--- quick-open
--- vim.keymap.set('', '<C-p>', '<cmd>Files<cr>')
--- search buffers
--- vim.keymap.set('n', '<leader>;', '<cmd>Buffers<cr>')
+-- greatest remap ever
+vim.keymap.set("x", "<leader>p", [["_dP]])
+
+-- next greatest remap ever : asbjornHaland
+vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
+vim.keymap.set("n", "<leader>Y", [["+Y]])
+
+vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
 
 -- Jump to start and end of line using the home row keys
 vim.keymap.set('', 'H', '^')
