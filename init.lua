@@ -194,10 +194,10 @@ vim.keymap.set('n', '<leader>o', ':e <C-R>=expand("%:p:h") . "/" <cr>')
 vim.keymap.set("x", "<leader>p", [["_dP]])
 
 -- next greatest remap ever : asbjornHaland
-vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
+vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])
 
-vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
+vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 -- Jump to start and end of line using the home row keys
 vim.keymap.set('', 'H', '^')
@@ -918,7 +918,7 @@ require('lazy').setup {
                 -- with gruvbox theme set this to false
                 -- highlight = { enable = false },
                 highlight = { enable = true },
-                -- indent = { enable = true },
+                indent = { enable = true },
                 incremental_selection = {
                     enable = true,
                     keymaps = {
@@ -970,21 +970,40 @@ require('lazy').setup {
         end
     },
     {
+        "junegunn/seoul256.vim",
+        config = function()
+            -- vim.o.background = 'dark'
+            -- " seoul256 (dark):
+            -- "   Range:   233 (darkest) ~ 239 (lightest)
+            -- "   Default: 237
+            vim.g.seoul256_background = 233
+
+            -- " seoul256 (light):
+            -- "   Range:   252 (darkest) ~ 256 (lightest)
+            -- "   Default: 253
+            vim.g.seoul256_light_background = 256
+
+            vim.cmd([[colorscheme seoul256]])
+        end
+    },
+    {
         "kvrohit/rasmus.nvim",
         config = function()
-            vim.cmd([[colorscheme rasmus]])
+            -- vim.cmd([[colorscheme rasmus]])
         end
     },
     {
         "rose-pine/neovim",
         name = "rose-pine",
         config = function()
+            vim.o.background = 'dark'
             require('rose-pine').setup({
                 -- variant = "main", -- auto, main, moon, or dawn
                 -- dark_variant = "main", -- main, moon, or dawn
                 disable_background = true,
                 styles = {
                     italic = false,
+                    transparency = true,
                 },
             })
             -- vim.cmd([[colorscheme rose-pine]])
