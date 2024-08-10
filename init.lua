@@ -976,13 +976,14 @@ require('lazy').setup {
             -- " seoul256 (dark):
             -- "   Range:   233 (darkest) ~ 239 (lightest)
             -- "   Default: 237
-            vim.g.seoul256_background = 233
+            vim.g.seoul256_background = 234
 
             -- " seoul256 (light):
             -- "   Range:   252 (darkest) ~ 256 (lightest)
             -- "   Default: 253
             vim.g.seoul256_light_background = 256
 
+            vim.g.seoul256_srgb = 1
             vim.cmd([[colorscheme seoul256]])
         end
     },
@@ -992,38 +993,6 @@ require('lazy').setup {
             -- vim.cmd([[colorscheme rasmus]])
         end
     },
-    {
-        "rose-pine/neovim",
-        name = "rose-pine",
-        config = function()
-            vim.o.background = 'dark'
-            require('rose-pine').setup({
-                -- variant = "main", -- auto, main, moon, or dawn
-                -- dark_variant = "main", -- main, moon, or dawn
-                disable_background = true,
-                styles = {
-                    italic = false,
-                    transparency = true,
-                },
-            })
-            -- vim.cmd([[colorscheme rose-pine]])
-        end
-    },
-    {
-        'projekt0n/github-nvim-theme',
-        lazy = false,    -- make sure we load this during startup if it is your main colorscheme
-        priority = 1000, -- make sure to load this before all the other start plugins
-        config = function()
-            require('github-theme').setup({
-                options = {
-                    transparent = true,
-                }
-            })
-
-            -- vim.cmd('colorscheme github_dark_dimmed')
-            -- vim.cmd('colorscheme github_dark_default')
-        end,
-    }
     -- {
     --     "amitds1997/remote-nvim.nvim",
     --     version = "*",                       -- Pin to GitHub releases
