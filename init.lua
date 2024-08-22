@@ -229,6 +229,21 @@ vim.keymap.set('n', '?', '?\\v')
 vim.keymap.set('n', '/', '/\\v')
 vim.keymap.set('c', '%s/', '%sm/')
 
+
+-- open up config file
+vim.keymap.set('n', 'ga', '<cmd>e #<cr>', { desc = 'Switch to Other Buffer' })
+vim.keymap.set(
+    'n', 
+    '<leader>co', 
+    function() 
+        config_dir = vim.fn.stdpath 'config'
+        cmd = string.format(':e %s/init.lua', config_dir)
+
+        vim.cmd(cmd)
+    end,
+    { desc = '[S]earch [N]eovim files' }
+)
+
 -------------------------------------------------------------------------------
 --
 -- autocommands
@@ -560,36 +575,37 @@ require('lazy').setup {
         end,
     },
 
-    {                       -- Useful plugin to show you pending keybinds.
-        'folke/which-key.nvim',
-        event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-        config = function() -- This is the function that runs, AFTER loading
-            require('which-key').setup({
-                preset = 'helix',
-                icons = { mappings = false, rules = false }
-            })
-
-            -- Document existing key chains
-            require('which-key').add {
-                { '<leader>c', { group = '[C]ode' } },
-                { '<leader>d', { group = '[D]ocument' } },
-                { '<leader>r', { group = '[R]ename' } },
-                { '<leader>s', { group = '[S]earch' } },
-                { '<leader>w', { group = '[W]orkspace' } },
-            }
-        end,
-    },
+    -- {                       -- Useful plugin to show you pending keybinds.
+    --     'folke/which-key.nvim',
+    --     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    --     config = function() -- This is the function that runs, AFTER loading
+    --         require('which-key').setup({
+    --             preset = 'helix',
+    --             icons = { mappings = false, rules = false }
+    --         })
+    --
+    --         -- Document existing key chains
+    --         require('which-key').add {
+    --             { '<leader>c', { group = '[C]ode' } },
+    --             { '<leader>d', { group = '[D]ocument' } },
+    --             { '<leader>r', { group = '[R]ename' } },
+    --             { '<leader>s', { group = '[S]earch' } },
+    --             { '<leader>w', { group = '[W]orkspace' } },
+    --         }
+    --     end,
+    -- },
     {
         "ibhagwan/fzf-lua",
         -- optional for icon support
         config = function()
             -- calling `setup` is optional for customization
             local fzf = require("fzf-lua")
-            fzf.setup({ 'fzf-vim', winopts = { split = "belowright new" } })
+            fzf.setup({ 'max-perf', winopts = { split = "belowright new", preview = { hidden = 'hidden' } } })
 
             vim.keymap.set('n', '<leader>sh', function() fzf.helptags() end, { desc = '[S]earch [H]elp' })
             vim.keymap.set('n', '<leader>sk', function() fzf.keymaps() end, { desc = '[S]earch [K]eymaps' })
             vim.keymap.set('n', '<leader><leader>', function() fzf.files() end, { desc = '[S]earch [F]iles' })
+            vim.keymap.set('n', '<leader>sg', function() fzf.git_files() end, { desc = '[S]earch Git [F]iles' })
             vim.keymap.set('n', '<leader>ss', function() fzf.builtin() end, { desc = '[S]earch [S]elect Telescope' })
             vim.keymap.set('n', '<leader>sw', function() fzf.grep_cword() end, { desc = '[S]earch current [W]ord' })
             vim.keymap.set('n', '<leader>?', function() fzf.live_grep() end, { desc = '[S]earch by [G]rep' })
@@ -609,7 +625,9 @@ require('lazy').setup {
 
             -- Slightly advanced example of overriding default behavior and theme
             vim.keymap.set('n', '<leader>/', function()
-                fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
+                -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
+                -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
+                fzf.grep_curbuf()
 
                 -- You can pass additional configuration to telescope to change theme, layout, etc.
                 -- fzf.current_buffer_fuzzy_find(require('telescope.themes').get_ivy {
