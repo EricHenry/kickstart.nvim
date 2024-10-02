@@ -1013,7 +1013,7 @@ require('lazy').setup {
         priority = 1000, -- load first
         config = function()
             vim.o.background = 'dark'
-            vim.cmd([[colorscheme base16-gruvbox-dark-medium]])
+            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
 
             -- XXX: hi Normal ctermbg=NONE
             -- Make comments more prominent -- they are important.
