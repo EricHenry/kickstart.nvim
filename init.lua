@@ -117,6 +117,26 @@ vim.opt.showmode = false
 --  See `:help 'clipboard'`
 vim.opt.clipboard = 'unnamedplus'
 
+local function paste()
+  return {
+    vim.fn.split(vim.fn.getreg(""), "\n"),
+    vim.fn.getregtype(""),
+  }
+end
+
+vim.g.clipboard = {
+  name = "OSC 52",
+  copy = {
+    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+  },
+  paste = {
+    ["+"] = paste,
+    ["*"] = paste,
+  },
+}
+
+
 -- Enable break indent
 vim.opt.breakindent = true
 
@@ -413,19 +433,19 @@ require('lazy').setup {
     --    require('Comment').setup({})
 
     -- "gc" to comment visual regions/lines
-    -- {
-    -- 	'numToStr/Comment.nvim',
-    -- 	opts = {
-    -- 		toggler = {
-    -- 			line = '<C-c>',
-    -- 			block = '<A-c>',
-    -- 		},
-    -- 		opleader = {
-    -- 			line = '<C-c>',
-    -- 			block = '<A-c>',
-    -- 		},
-    -- 	},
-    -- },
+    {
+    	'numToStr/Comment.nvim',
+    	opts = {
+    		-- toggler = {
+    		-- 	line = '<C-c>',
+    		-- 	block = '<A-c>',
+    		-- },
+    		-- opleader = {
+    		-- 	line = '<C-c>',
+    		-- 	block = '<A-c>',
+    		-- },
+    	},
+    },
     -- NOTE: Plugins can also be configured to run lua code when they are loaded.
     --
     -- This is often very useful to both group configuration, as well as handle
@@ -625,13 +645,13 @@ require('lazy').setup {
             vim.keymap.set('n', '<leader>sg', function() fzf.git_files() end, { desc = '[S]earch Git [F]iles' })
             vim.keymap.set('n', '<leader>ss', function() fzf.builtin() end, { desc = '[S]earch [S]elect Telescope' })
             vim.keymap.set('n', '<leader>sw', function() fzf.grep_cword() end, { desc = '[S]earch current [W]ord' })
-            vim.keymap.set('n', '<leader>?', function() fzf.live_grep() end, { desc = '[S]earch by [G]rep' })
+            vim.keymap.set('n', '<leader>/', function() fzf.live_grep() end, { desc = '[S]earch project by [G]rep' })
             vim.keymap.set('n', '<leader>sd', function() fzf.diagnostics_document() end,
                 { desc = '[S]earch [D]iagnostics' })
             vim.keymap.set('n', '<leader>sD', function() fzf.diagnostics_workspace() end,
                 { desc = '[S]earch [D]iagnostics' })
             vim.keymap.set('n', '<leader>sr', function() fzf.resume() end, { desc = '[S]earch [R]esume' })
-            vim.keymap.set('n', '<leader>s.', function() fzf.oldfiles() end,
+            vim.keymap.set('n', '<leader>so', function() fzf.oldfiles() end,
                 { desc = '[S]earch Recent Files ("." for repeat)' })
             vim.keymap.set('n', '<leader>b', function() fzf.buffers() end, { desc = '[ ] Find existing buffers' })
             vim.keymap.set('n', '<leader>.', function()
@@ -640,27 +660,27 @@ require('lazy').setup {
                 fzf.files(function() return { cwd = vim.fn.expand('%:p:h') } end)
             end, { desc = 'Find Files (root dir)' })
 
-            -- Slightly advanced example of overriding default behavior and theme
-            vim.keymap.set('n', '<leader>/', function()
-                -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
-                -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
-                fzf.grep_curbuf()
-
-                -- You can pass additional configuration to telescope to change theme, layout, etc.
-                -- fzf.current_buffer_fuzzy_find(require('telescope.themes').get_ivy {
-                --     -- winblend = 10,
-                --     previewer = false,
-                -- })
-            end, { desc = '[/] Fuzzily search in current buffer' })
-
-            -- Also possible to pass additional configuration options.
-            --  See `:help telescope.fzf.live_grep()` for information about particular keys
-            vim.keymap.set('n', '<leader>s/', function() fzf.grep_curbuf() end, { desc = '[S]earch [/] in Open Files' })
-
             -- Shortcut for searching your neovim configuration files
             vim.keymap.set('n', '<leader>sn', function()
                 fzf.files(function() return { cwd = vim.fn.stdpath 'config' } end)
             end, { desc = '[S]earch [N]eovim files' })
+
+            -- Slightly advanced example of overriding default behavior and theme
+            -- vim.keymap.set('n', '<leader>/', function()
+            --     -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
+            --     -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
+            --     fzf.grep_curbuf()
+            --
+            --     -- You can pass additional configuration to telescope to change theme, layout, etc.
+            --     -- fzf.current_buffer_fuzzy_find(require('telescope.themes').get_ivy {
+            --     --     -- winblend = 10,
+            --     --     previewer = false,
+            --     -- })
+            -- end, { desc = '[/] Fuzzily search in current buffer' })
+
+            -- Also possible to pass additional configuration options.
+            --  See `:help telescope.fzf.live_grep()` for information about particular keys
+            -- vim.keymap.set('n', '<leader>s/', function() fzf.grep_curbuf() end, { desc = '[S]earch [/] in Open Files' })
         end
     },
     {
@@ -716,210 +736,210 @@ require('lazy').setup {
     --         }
     --     end,
     -- },
-    {
-        'neovim/nvim-lspconfig',
-        dependencies = { -- Automatically install LSPs and related tools to stdpath for neovim
-            'williamboman/mason.nvim',
-            'williamboman/mason-lspconfig.nvim',
-            'WhoIsSethDaniel/mason-tool-installer.nvim',
-
-
-            -- Useful status updates for LSP.
-            -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-            { 'j-hui/fidget.nvim', opts = {} },
-        },
-        config = function()
-            local cmp = require 'cmp'
-
-            -- LSP servers and clients are able to communicate to each other what features they support.
-            --  By default, Neovim doesn't support everything that is in the LSP Specification.
-            --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
-            --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
-            local capabilities = vim.lsp.protocol.make_client_capabilities()
-            capabilities = vim.tbl_deep_extend('force', capabilities,
-                require('cmp_nvim_lsp').default_capabilities())
-
-            -- Disable snippet support
-            capabilities.textDocument.completion.completionItem.snippetSupport = false
-
-            -- Enable the following language servers
-            --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
-            --
-            --  Add any additional override configuration in the following tables. Available keys are:
-            --  - cmd (table): Override the default command used to start the server
-            --  - filetypes (table): Override the default list of associated filetypes for the server
-            --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-            --  - settings (table): Override the default settings passed when initializing the server.
-            --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-            local servers = {
-                -- clangd = {},
-                -- gopls = {},
-                -- pyright = {},
-                -- rust_analyzer = {},
-                -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-                --
-                -- Some languages (like typescript) have entire language plugins that can be useful:
-                --    https://github.com/pmizio/typescript-tools.nvim
-                --
-                -- But for many setups, the LSP (`tsserver`) will work just fine
-                -- tsserver = {},
-                --
-                clangd = {
-                    keys = {
-                        { '<leader>cR', '<cmd>ClangdSwitchSourceHeader<cr>', desc = 'Switch Source/Header (C/C++)' },
-                    },
-                    filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
-                    root_dir = function(fname)
-                        return require('lspconfig.util').root_pattern(
-                                'Makefile',
-                                'configure.ac',
-                                'configure.in',
-                                'config.h.in',
-                                'meson.build',
-                                'meson_options.txt',
-                                'build.ninja'
-                            )(fname) or
-                            require('lspconfig.util').root_pattern('compile_commands.json',
-                                'compile_flags.txt')(fname) or
-                            require('lspconfig.util').find_git_ancestor(
-                                fname
-                            )
-                    end,
-                    capabilities = {
-                        offsetEncoding = { 'utf-16' },
-                    },
-                    cmd = {
-                        'clangd',
-                        '--background-index',
-                        '--clang-tidy',
-                        '--header-insertion=iwyu',
-                        '--completion-style=detailed',
-                        '--function-arg-placeholders',
-                        '--fallback-style=llvm',
-                    },
-                    init_options = {
-                        usePlaceholders = true,
-                        completeUnimported = true,
-                        clangdFileStatus = true,
-                    },
-                },
-                rust_analyzer = {
-                    -- Server-specific settings. See `:help lspconfig-setup`
-                    keys = {
-                        { 'K', '<cmd>RustHoverActions<cr>', desc = 'Hover Actions (Rust)' },
-                        -- { '<leader>cR', '<cmd>RustCodeAction<cr>', desc = 'Code Action (Rust)' },
-                        -- { '<leader>dr', '<cmd>RustDebuggables<cr>', desc = 'Run Debuggables (Rust)' },
-                    },
-                    settings = {
-                        ['rust-analyzer'] = {
-                            cargo = {
-                                allFeatures = true,
-                                loadOutDirsFromCheck = true,
-                                runBuildScripts = true,
-                            },
-                            -- Add clippy lints for Rust.
-                            checkOnSave = {
-                                allFeatures = true,
-                                command = 'clippy',
-                                extraArgs = { '--no-deps' },
-                            },
-                        },
-                    },
-                },
-                taplo = {
-                    keys = {
-                        {
-                            'K',
-                            function()
-                                if vim.fn.expand '%:t' == 'Cargo.toml' and require('crates').popup_available() then
-                                    require('crates').show_popup()
-                                else
-                                    vim.lsp.buf.hover()
-                                end
-                            end,
-                            desc = 'Show Crate Documentation',
-                        },
-                    },
-                },
-                marksman = {},
-                lua_ls = {
-                    -- cmd = {...},
-                    -- filetypes { ...},
-                    -- capabilities = {},
-                    settings = {
-                        Lua = {
-                            runtime = { version = 'LuaJIT' },
-                            workspace = {
-                                checkThirdParty = false,
-                                -- Tells lua_ls where to find all the Lua files that you have loaded
-                                -- for your neovim configuration.
-                                library = {
-                                    '${3rd}/luv/library',
-                                    unpack(vim.api.nvim_get_runtime_file('', true)),
-                                },
-                                -- If lua_ls is really slow on your computer, you can try this instead:
-                                -- library = { vim.env.VIMRUNTIME },
-                            },
-                            completion = {
-                                callSnippet = 'Replace',
-                            },
-                            -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-                            -- diagnostics = { disable = { 'missing-fields' } },
-                        },
-                    },
-                },
-            }
-
-            -- for server_name, server in pairs(servers) do
-            -- 	-- This handles overriding only values explicitly passed
-            -- 	-- by the server configuration above. Useful when disabling
-            -- 	-- certain features of an LSP (for example, turning off formatting for tsserver)
-            -- 	server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            -- 	require('lspconfig')[server_name].setup(server)
-            -- end
-            -- Ensure the servers and tools above are installed
-            --  To check the current status of installed tools and/or manually install
-            --  other tools, you can run
-            --    :Mason
-            --
-            --  You can press `g?` for help in this menu
-            require('mason').setup()
-
-            -- You can add other tools here that you want Mason to install
-            -- for you, so that they are available from within Neovim.
-            local ensure_installed = vim.tbl_keys(servers or {})
-            vim.list_extend(ensure_installed, {
-                'stylua', -- Used to format lua code
-            })
-            require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
-            require('mason-lspconfig').setup {
-                handlers = {
-                    function(server_name)
-                        local server = servers[server_name] or {}
-                        -- This handles overriding only values explicitly passed
-                        -- by the server configuration above. Useful when disabling
-                        -- certain features of an LSP (for example, turning off formatting for tsserver)
-                        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities,
-                            server.capabilities or {})
-                        require('lspconfig')[server_name].setup(server)
-                    end,
-                },
-            }
-
-            vim.diagnostic.config {
-                -- update_in_insert = true,
-                float = {
-                    focusable = false,
-                    style = 'minimal',
-                    border = 'rounded',
-                    source = 'always',
-                    header = '',
-                    prefix = '',
-                },
-            }
-        end,
-    },
+    -- {
+    --     'neovim/nvim-lspconfig',
+    --     dependencies = { -- Automatically install LSPs and related tools to stdpath for neovim
+    --         'williamboman/mason.nvim',
+    --         'williamboman/mason-lspconfig.nvim',
+    --         'WhoIsSethDaniel/mason-tool-installer.nvim',
+    --
+    --
+    --         -- Useful status updates for LSP.
+    --         -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
+    --         { 'j-hui/fidget.nvim', opts = {} },
+    --     },
+    --     config = function()
+    --         local cmp = require 'cmp'
+    --
+    --         -- LSP servers and clients are able to communicate to each other what features they support.
+    --         --  By default, Neovim doesn't support everything that is in the LSP Specification.
+    --         --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
+    --         --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
+    --         local capabilities = vim.lsp.protocol.make_client_capabilities()
+    --         capabilities = vim.tbl_deep_extend('force', capabilities,
+    --             require('cmp_nvim_lsp').default_capabilities())
+    --
+    --         -- Disable snippet support
+    --         capabilities.textDocument.completion.completionItem.snippetSupport = false
+    --
+    --         -- Enable the following language servers
+    --         --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
+    --         --
+    --         --  Add any additional override configuration in the following tables. Available keys are:
+    --         --  - cmd (table): Override the default command used to start the server
+    --         --  - filetypes (table): Override the default list of associated filetypes for the server
+    --         --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
+    --         --  - settings (table): Override the default settings passed when initializing the server.
+    --         --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+    --         local servers = {
+    --             -- clangd = {},
+    --             -- gopls = {},
+    --             -- pyright = {},
+    --             -- rust_analyzer = {},
+    --             -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+    --             --
+    --             -- Some languages (like typescript) have entire language plugins that can be useful:
+    --             --    https://github.com/pmizio/typescript-tools.nvim
+    --             --
+    --             -- But for many setups, the LSP (`tsserver`) will work just fine
+    --             -- tsserver = {},
+    --             --
+    --             clangd = {
+    --                 keys = {
+    --                     { '<leader>cR', '<cmd>ClangdSwitchSourceHeader<cr>', desc = 'Switch Source/Header (C/C++)' },
+    --                 },
+    --                 filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+    --                 root_dir = function(fname)
+    --                     return require('lspconfig.util').root_pattern(
+    --                             'Makefile',
+    --                             'configure.ac',
+    --                             'configure.in',
+    --                             'config.h.in',
+    --                             'meson.build',
+    --                             'meson_options.txt',
+    --                             'build.ninja'
+    --                         )(fname) or
+    --                         require('lspconfig.util').root_pattern('compile_commands.json',
+    --                             'compile_flags.txt')(fname) or
+    --                         require('lspconfig.util').find_git_ancestor(
+    --                             fname
+    --                         )
+    --                 end,
+    --                 capabilities = {
+    --                     offsetEncoding = { 'utf-16' },
+    --                 },
+    --                 cmd = {
+    --                     'clangd',
+    --                     '--background-index',
+    --                     '--clang-tidy',
+    --                     '--header-insertion=iwyu',
+    --                     '--completion-style=detailed',
+    --                     '--function-arg-placeholders',
+    --                     '--fallback-style=llvm',
+    --                 },
+    --                 init_options = {
+    --                     usePlaceholders = true,
+    --                     completeUnimported = true,
+    --                     clangdFileStatus = true,
+    --                 },
+    --             },
+    --             rust_analyzer = {
+    --                 -- Server-specific settings. See `:help lspconfig-setup`
+    --                 keys = {
+    --                     { 'K', '<cmd>RustHoverActions<cr>', desc = 'Hover Actions (Rust)' },
+    --                     -- { '<leader>cR', '<cmd>RustCodeAction<cr>', desc = 'Code Action (Rust)' },
+    --                     -- { '<leader>dr', '<cmd>RustDebuggables<cr>', desc = 'Run Debuggables (Rust)' },
+    --                 },
+    --                 settings = {
+    --                     ['rust-analyzer'] = {
+    --                         cargo = {
+    --                             allFeatures = true,
+    --                             loadOutDirsFromCheck = true,
+    --                             runBuildScripts = true,
+    --                         },
+    --                         -- Add clippy lints for Rust.
+    --                         checkOnSave = {
+    --                             allFeatures = true,
+    --                             command = 'clippy',
+    --                             extraArgs = { '--no-deps' },
+    --                         },
+    --                     },
+    --                 },
+    --             },
+    --             taplo = {
+    --                 keys = {
+    --                     {
+    --                         'K',
+    --                         function()
+    --                             if vim.fn.expand '%:t' == 'Cargo.toml' and require('crates').popup_available() then
+    --                                 require('crates').show_popup()
+    --                             else
+    --                                 vim.lsp.buf.hover()
+    --                             end
+    --                         end,
+    --                         desc = 'Show Crate Documentation',
+    --                     },
+    --                 },
+    --             },
+    --             marksman = {},
+    --             lua_ls = {
+    --                 -- cmd = {...},
+    --                 -- filetypes { ...},
+    --                 -- capabilities = {},
+    --                 settings = {
+    --                     Lua = {
+    --                         runtime = { version = 'LuaJIT' },
+    --                         workspace = {
+    --                             checkThirdParty = false,
+    --                             -- Tells lua_ls where to find all the Lua files that you have loaded
+    --                             -- for your neovim configuration.
+    --                             library = {
+    --                                 '${3rd}/luv/library',
+    --                                 unpack(vim.api.nvim_get_runtime_file('', true)),
+    --                             },
+    --                             -- If lua_ls is really slow on your computer, you can try this instead:
+    --                             -- library = { vim.env.VIMRUNTIME },
+    --                         },
+    --                         completion = {
+    --                             callSnippet = 'Replace',
+    --                         },
+    --                         -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+    --                         -- diagnostics = { disable = { 'missing-fields' } },
+    --                     },
+    --                 },
+    --             },
+    --         }
+    --
+    --         -- for server_name, server in pairs(servers) do
+    --         -- 	-- This handles overriding only values explicitly passed
+    --         -- 	-- by the server configuration above. Useful when disabling
+    --         -- 	-- certain features of an LSP (for example, turning off formatting for tsserver)
+    --         -- 	server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+    --         -- 	require('lspconfig')[server_name].setup(server)
+    --         -- end
+    --         -- Ensure the servers and tools above are installed
+    --         --  To check the current status of installed tools and/or manually install
+    --         --  other tools, you can run
+    --         --    :Mason
+    --         --
+    --         --  You can press `g?` for help in this menu
+    --         require('mason').setup()
+    --
+    --         -- You can add other tools here that you want Mason to install
+    --         -- for you, so that they are available from within Neovim.
+    --         local ensure_installed = vim.tbl_keys(servers or {})
+    --         vim.list_extend(ensure_installed, {
+    --             'stylua', -- Used to format lua code
+    --         })
+    --         require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+    --
+    --         require('mason-lspconfig').setup {
+    --             handlers = {
+    --                 function(server_name)
+    --                     local server = servers[server_name] or {}
+    --                     -- This handles overriding only values explicitly passed
+    --                     -- by the server configuration above. Useful when disabling
+    --                     -- certain features of an LSP (for example, turning off formatting for tsserver)
+    --                     server.capabilities = vim.tbl_deep_extend('force', {}, capabilities,
+    --                         server.capabilities or {})
+    --                     require('lspconfig')[server_name].setup(server)
+    --                 end,
+    --             },
+    --         }
+    --
+    --         vim.diagnostic.config {
+    --             -- update_in_insert = true,
+    --             float = {
+    --                 focusable = false,
+    --                 style = 'minimal',
+    --                 border = 'rounded',
+    --                 source = 'always',
+    --                 header = '',
+    --                 prefix = '',
+    --             },
+    --         }
+    --     end,
+    -- },
     -- Highlight, edit, and navigate code
     {
         'nvim-treesitter/nvim-treesitter',
@@ -976,8 +996,8 @@ require('lazy').setup {
                 -- Autoinstall languages that are not installed
                 auto_install = true,
                 -- with gruvbox theme set this to false
-                highlight = { enable = false },
-                -- highlight = { enable = true },
+                -- highlight = { enable = false },
+                highlight = { enable = true },
                 indent = { enable = true },
                 incremental_selection = {
                     enable = true,
@@ -1012,29 +1032,41 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            vim.o.background = 'dark'
-            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-
-            -- XXX: hi Normal ctermbg=NONE
-            -- Make comments more prominent -- they are important.
-            -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            -- vim.api.nvim_set_hl(0, 'Comment', bools)
-
-            -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-
-            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+           --  vim.o.background = 'dark'
+           --  vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+           --
+           --  -- XXX: hi Normal ctermbg=NONE
+           --  -- Make comments more prominent -- they are important.
+           --  local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+           --  vim.api.nvim_set_hl(0, 'Comment', bools)
+           --
+           -- -- Make it clearly visible which argument we're at.
+           --  local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+           --
+           --  vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+           --      { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+           --  local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+           --  vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
         end
     },
     {
         "ellisonleao/gruvbox.nvim",
         priority = 1000,
         config = function()
-            -- vim.o.background = "dark" -- or "light" for light mode
-            -- vim.cmd([[colorscheme gruvbox]])
+            require("gruvbox").setup({ contrast = "hard" })
+
+            vim.o.background = "dark" -- or "light" for light mode
+            vim.cmd([[colorscheme gruvbox]])
+
+            -- Make comments more prominent -- they are important.
+            local orange = vim.api.nvim_get_hl(0, { name = 'GruvboxOrange' })
+            vim.api.nvim_set_hl(0, 'Comment', orange)
+
+            local white = vim.api.nvim_get_hl(0, { name = 'GruvboxFg1' })
+            vim.api.nvim_set_hl(0, 'Delimiter', white)
+            vim.api.nvim_set_hl(0, 'Operator', white)
+            vim.api.nvim_set_hl(0, 'MatchParens', white)
+            vim.api.nvim_set_hl(0, '@constructor.lua', white)
         end
     },
     {
