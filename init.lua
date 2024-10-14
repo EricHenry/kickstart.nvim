@@ -1032,41 +1032,44 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-           --  vim.o.background = 'dark'
-           --  vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-           --
-           --  -- XXX: hi Normal ctermbg=NONE
-           --  -- Make comments more prominent -- they are important.
-           --  local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-           --  vim.api.nvim_set_hl(0, 'Comment', bools)
-           --
-           -- -- Make it clearly visible which argument we're at.
-           --  local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-           --
-           --  vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-           --      { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-           --  local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-           --  vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            vim.o.background = 'dark'
+            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+
+            -- XXX: hi Normal ctermbg=NONE
+            -- Make comments more prominent -- they are important.
+            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+            vim.api.nvim_set_hl(0, 'Comment', bools)
+
+           -- Make it clearly visible which argument we're at.
+            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+
+            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
     },
     {
         "ellisonleao/gruvbox.nvim",
         priority = 1000,
         config = function()
-            require("gruvbox").setup({ contrast = "hard" })
-
-            vim.o.background = "dark" -- or "light" for light mode
-            vim.cmd([[colorscheme gruvbox]])
-
-            -- Make comments more prominent -- they are important.
-            local orange = vim.api.nvim_get_hl(0, { name = 'GruvboxOrange' })
-            vim.api.nvim_set_hl(0, 'Comment', orange)
-
-            local white = vim.api.nvim_get_hl(0, { name = 'GruvboxFg1' })
-            vim.api.nvim_set_hl(0, 'Delimiter', white)
-            vim.api.nvim_set_hl(0, 'Operator', white)
-            vim.api.nvim_set_hl(0, 'MatchParens', white)
-            vim.api.nvim_set_hl(0, '@constructor.lua', white)
+            -- require("gruvbox").setup({ contrast = "hard" })
+            --
+            -- vim.o.background = "dark" -- or "light" for light mode
+            -- vim.cmd([[colorscheme gruvbox]])
+            --
+            -- -- Make comments more prominent -- they are important.
+            -- local orange = vim.api.nvim_get_hl(0, { name = 'GruvboxOrange' })
+            -- vim.api.nvim_set_hl(0, 'Comment', orange)
+            --
+            -- local white = vim.api.nvim_get_hl(0, { name = 'GruvboxFg1' })
+            -- vim.api.nvim_set_hl(0, 'Delimiter', white)
+            -- vim.api.nvim_set_hl(0, 'Operator', white)
+            -- vim.api.nvim_set_hl(0, 'MatchParens', white)
+            -- vim.api.nvim_set_hl(0, '@constructor.lua', white)
         end
     },
     {
