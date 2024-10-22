@@ -461,12 +461,12 @@ require('lazy').setup {
     -- after the plugin has been loaded:
     --  config = function() ... end
     -- auto-cd to root of git project
-    -- {
-    --     'notjedi/nvim-rooter.lua',
-    --     config = function()
-    --         require('nvim-rooter').setup()
-    --     end,
-    -- },
+    {
+        'notjedi/nvim-rooter.lua',
+        config = function()
+            require('nvim-rooter').setup()
+        end,
+    },
     -- better %
     {
         'andymass/vim-matchup',
