@@ -1027,70 +1027,102 @@ require('lazy').setup {
             --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
         end,
     },
+    -- {
+    --     "wincent/base16-nvim",
+    --     lazy = false,    -- load at start
+    --     priority = 1000, -- load first
+    --     config = function()
+    --         vim.o.background = 'dark'
+    --         vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+    --
+    --         -- XXX: hi Normal ctermbg=NONE
+    --         -- Make comments more prominent -- they are important.
+    --         local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+    --         vim.api.nvim_set_hl(0, 'Comment', bools)
+    --
+    --        -- Make it clearly visible which argument we're at.
+    --         local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+    --
+    --         vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+    --             { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+    --         local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+    --         vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+    --         vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+    --         vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+    --         vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+    --     end
+    -- },
     {
-        "wincent/base16-nvim",
-        lazy = false,    -- load at start
-        priority = 1000, -- load first
+        'projekt0n/github-nvim-theme',
+        name = 'github-theme',
+        lazy = false, -- make sure we load this during startup if it is your main colorscheme
+        priority = 1000, -- make sure to load this before all the other start plugins
         config = function()
-            vim.o.background = 'dark'
-            vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+            -- require('github-theme').setup({ 
+            --     -- palettes = palettes 
+            --     palettes = {
+            --         -- Custom duskfox with black background
+            --         github_dark = {
+            --             bg1 = '#000000', -- Black background
+            --             bg0 = '#1d1d2b', -- Alt backgrounds (floats, statusline, ...)
+            --             bg3 = '#121820', -- 55% darkened from stock
+            --             sel0 = '#131b24', -- 55% darkened from stock
+            --         },
+            --     },
+            -- })
 
-            -- XXX: hi Normal ctermbg=NONE
-            -- Make comments more prominent -- they are important.
-            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            vim.api.nvim_set_hl(0, 'Comment', bools)
+            require('github-theme').setup({
+                palettes = { },
+                specs = {
+                    github_dark = {
+                        bg1 = '#24292e', -- Black background
+                    },
+                },
+            })
 
-           -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-
-            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
-        end
+            vim.cmd('colorscheme github_dark')
+            -- vim.cmd('colorscheme github_dark_default')
+        end,
     },
-    {
-        "ellisonleao/gruvbox.nvim",
-        priority = 1000,
-        config = function()
-            -- require("gruvbox").setup({ contrast = "hard" })
-            --
-            -- vim.o.background = "dark" -- or "light" for light mode
-            -- vim.cmd([[colorscheme gruvbox]])
-            --
-            -- -- Make comments more prominent -- they are important.
-            -- local orange = vim.api.nvim_get_hl(0, { name = 'GruvboxOrange' })
-            -- vim.api.nvim_set_hl(0, 'Comment', orange)
-            --
-            -- local white = vim.api.nvim_get_hl(0, { name = 'GruvboxFg1' })
-            -- vim.api.nvim_set_hl(0, 'Delimiter', white)
-            -- vim.api.nvim_set_hl(0, 'Operator', white)
-            -- vim.api.nvim_set_hl(0, 'MatchParens', white)
-            -- vim.api.nvim_set_hl(0, '@constructor.lua', white)
-        end
-    },
-    {
-        "junegunn/seoul256.vim",
-        config = function()
-            -- " seoul256 (dark):
-            -- "   Range:   233 (darkest) ~ 239 (lightest)
-            -- "   Default: 237
-            vim.g.seoul256_background = 234
-
-            -- " seoul256 (light):
-            -- "   Range:   252 (darkest) ~ 256 (lightest)
-            -- "   Default: 253
-            vim.g.seoul256_light_background = 252
-
-            -- vim.o.background = 'dark'
-            vim.g.seoul256_srgb = 1
-            -- vim.cmd([[colorscheme seoul256-light]])
-            -- vim.cmd([[colorscheme seoul256]])
-        end
-    },
+    -- {
+    --     "ellisonleao/gruvbox.nvim",
+    --     priority = 1000,
+    --     config = function()
+    --         -- require("gruvbox").setup({ contrast = "hard" })
+    --         --
+    --         -- vim.o.background = "dark" -- or "light" for light mode
+    --         -- vim.cmd([[colorscheme gruvbox]])
+    --         --
+    --         -- -- Make comments more prominent -- they are important.
+    --         -- local orange = vim.api.nvim_get_hl(0, { name = 'GruvboxOrange' })
+    --         -- vim.api.nvim_set_hl(0, 'Comment', orange)
+    --         --
+    --         -- local white = vim.api.nvim_get_hl(0, { name = 'GruvboxFg1' })
+    --         -- vim.api.nvim_set_hl(0, 'Delimiter', white)
+    --         -- vim.api.nvim_set_hl(0, 'Operator', white)
+    --         -- vim.api.nvim_set_hl(0, 'MatchParens', white)
+    --         -- vim.api.nvim_set_hl(0, '@constructor.lua', white)
+    --     end
+    -- },
+    -- {
+    --     "junegunn/seoul256.vim",
+    --     config = function()
+    --         -- " seoul256 (dark):
+    --         -- "   Range:   233 (darkest) ~ 239 (lightest)
+    --         -- "   Default: 237
+    --         vim.g.seoul256_background = 234
+    --
+    --         -- " seoul256 (light):
+    --         -- "   Range:   252 (darkest) ~ 256 (lightest)
+    --         -- "   Default: 253
+    --         vim.g.seoul256_light_background = 252
+    --
+    --         -- vim.o.background = 'dark'
+    --         vim.g.seoul256_srgb = 1
+    --         -- vim.cmd([[colorscheme seoul256-light]])
+    --         -- vim.cmd([[colorscheme seoul256]])
+    --     end
+    -- },
     -- {
     --     "amitds1997/remote-nvim.nvim",
     --     version = "*",                       -- Pin to GitHub releases
