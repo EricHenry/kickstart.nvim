@@ -186,6 +186,9 @@ vim.opt.wildmode = 'list:longest,full'
 -- don't suggest files like there:
 vim.opt.wildignore = '.hg,.svn,*~,*.png,*.jpg,*.gif,*.min.js,*.swp,*.o,vendor,dist,_site'
 
+-- show a column at 80 characters as a guide for long lines
+vim.opt.colorcolumn = '80'
+
 -- tabs: go big or go home
 vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
@@ -517,22 +520,58 @@ require('lazy').setup {
     --     end
     -- },
     {
-        'christoomey/vim-tmux-navigator',
-        cmd = {
-            'TmuxNavigateLeft',
-            'TmuxNavigateDown',
-            'TmuxNavigateUp',
-            'TmuxNavigateRight',
-            'TmuxNavigatePrevious',
+        'smoka7/hop.nvim',
+        version = "*",
+        opts = {
+            keys = 'etovxqpdygfblzhckisuran'
         },
-        keys = {
-            { '<c-h>',  '<cmd><C-U>TmuxNavigateLeft<cr>' },
-            { '<c-j>',  '<cmd><C-U>TmuxNavigateDown<cr>' },
-            { '<c-k>',  '<cmd><C-U>TmuxNavigateUp<cr>' },
-            { '<c-l>',  '<cmd><C-U>TmuxNavigateRight<cr>' },
-            { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
-        },
+        config = function() 
+            -- place this in one of your configuration file(s)
+            local hop = require('hop')
+            hop.setup {}
+            local directions = require('hop.hint').HintDirection
+            -- vim.keymap.set('', 'gw', function()
+            --     hop.hint_words()
+            -- end, {remap=true})
+            -- vim.keymap.set('', 'f', function()
+            --     hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+            -- end, {remap=true})
+            -- vim.keymap.set('', 'F', function()
+            --     hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+            -- end, {remap=true})
+            -- vim.keymap.set('', 't', function()
+            --     hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
+            -- end, {remap=true})
+            -- vim.keymap.set('', 'T', function()
+            --     hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
+            -- end, {remap=true})
+        end
     },
+    {
+        "folke/zen-mode.nvim",
+        opts = {
+            -- your configuration comes here
+            -- or leave it empty to use the default settings
+            -- refer to the configuration section below
+        }
+    },
+    -- {
+    --     'christoomey/vim-tmux-navigator',
+    --     cmd = {
+    --         'TmuxNavigateLeft',
+    --         'TmuxNavigateDown',
+    --         'TmuxNavigateUp',
+    --         'TmuxNavigateRight',
+    --         'TmuxNavigatePrevious',
+    --     },
+    --     keys = {
+    --         { '<c-h>',  '<cmd><C-U>TmuxNavigateLeft<cr>' },
+    --         { '<c-j>',  '<cmd><C-U>TmuxNavigateDown<cr>' },
+    --         { '<c-k>',  '<cmd><C-U>TmuxNavigateUp<cr>' },
+    --         { '<c-l>',  '<cmd><C-U>TmuxNavigateRight<cr>' },
+    --         { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+    --     },
+    -- },
     {
         "hrsh7th/nvim-cmp",
         lazy = false,
