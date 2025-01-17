@@ -187,7 +187,7 @@ vim.opt.wildmode = 'list:longest,full'
 vim.opt.wildignore = '.hg,.svn,*~,*.png,*.jpg,*.gif,*.min.js,*.swp,*.o,vendor,dist,_site'
 
 -- show a column at 80 characters as a guide for long lines
-vim.opt.colorcolumn = '80'
+-- vim.opt.colorcolumn = '80'
 
 -- tabs: go big or go home
 vim.opt.shiftwidth = 4
@@ -495,6 +495,7 @@ require('lazy').setup {
     { 'mg979/vim-visual-multi',
         branch = 'master',
     },
+    { 'preservim/tagbar' },
     {
         "kylechui/nvim-surround",
         version = "*", -- Use for stability; omit to use `main` branch for the latest features
@@ -546,14 +547,6 @@ require('lazy').setup {
             --     hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
             -- end, {remap=true})
         end
-    },
-    {
-        "folke/zen-mode.nvim",
-        opts = {
-            -- your configuration comes here
-            -- or leave it empty to use the default settings
-            -- refer to the configuration section below
-        }
     },
     -- {
     --     'christoomey/vim-tmux-navigator',
