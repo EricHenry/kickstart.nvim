@@ -488,13 +488,27 @@ require('lazy').setup {
         'echasnovski/mini.nvim',
         version = false,
         config = function()
-            require('mini.ai').setup()
+            -- require('mini.ai').setup()
             require('mini.comment').setup()
             require('mini.pairs').setup()
             require('mini.surround').setup()
-            require('mini.jump2d').setup()
+            -- require('mini.jump2d').setup()
             -- require('mini.completion').setup()
         end
+    },
+    {
+        "folke/flash.nvim",
+        event = "VeryLazy",
+        ---@type Flash.Config
+        opts = {},
+        -- stylua: ignore
+        keys = {
+            { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+            { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+            { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+            { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+            { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+        },
     },
     {
         'stevearc/oil.nvim',
@@ -592,57 +606,75 @@ require('lazy').setup {
             }
         end,
     },
-    {
-        "ibhagwan/fzf-lua",
-        -- optional for icon support
-        config = function()
-            -- calling `setup` is optional for customization
-            local fzf = require("fzf-lua")
-            -- fzf.setup({ 'max-perf', winopts = { split = "belowright new", preview = { hidden = 'hidden' } } })
-            fzf.setup({ 'max-perf', winopts = { split = "belowright new", } })
+    { -- Fuzzy Finder (files, lsp, etc)
+        'nvim-telescope/telescope.nvim',
+        event = 'VimEnter',
+        branch = '0.1.x',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            { -- If encountering errors, see telescope-fzf-native README for installation instructions
+                'nvim-telescope/telescope-fzf-native.nvim',
 
-            vim.keymap.set('n', '<leader>sh', function() fzf.helptags() end, { desc = '[S]earch [H]elp' })
-            vim.keymap.set('n', '<leader>sk', function() fzf.keymaps() end, { desc = '[S]earch [K]eymaps' })
-            vim.keymap.set('n', '<leader><leader>', function() fzf.files() end, { desc = '[S]earch [F]iles' })
-            vim.keymap.set('n', '<leader>sg', function() fzf.git_files() end, { desc = '[S]earch Git [F]iles' })
-            vim.keymap.set('n', '<leader>ss', function() fzf.builtin() end, { desc = '[S]earch [S]elect Telescope' })
-            vim.keymap.set('n', '<leader>sw', function() fzf.grep_cword() end, { desc = '[S]earch current [W]ord' })
-            vim.keymap.set('n', '<leader>/', function() fzf.live_grep() end, { desc = '[S]earch project by [G]rep' })
-            vim.keymap.set('n', '<leader>sd', function() fzf.diagnostics_document() end,
-                { desc = '[S]earch [D]iagnostics' })
-            vim.keymap.set('n', '<leader>sD', function() fzf.diagnostics_workspace() end,
-                { desc = '[S]earch [D]iagnostics' })
-            vim.keymap.set('n', '<leader>sr', function() fzf.resume() end, { desc = '[S]earch [R]esume' })
-            vim.keymap.set('n', '<leader>so', function() fzf.oldfiles() end,
-                { desc = '[S]earch Recent Files ("." for repeat)' })
-            vim.keymap.set('n', '<leader>b', function() fzf.buffers() end, { desc = '[ ] Find existing buffers' })
+                -- `build` is used to run some command when the plugin is installed/updated.
+                -- This is only run then, not every time Neovim starts up.
+                build = 'make',
+
+                -- `cond` is a condition used to determine whether this plugin should be
+                -- installed and loaded.
+                cond = function()
+                    return vim.fn.executable 'make' == 1
+                end,
+            },
+            { 'nvim-telescope/telescope-ui-select.nvim' },
+
+            -- Useful for getting pretty icons, but requires a Nerd Font.
+            -- { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+        },
+        config = function()
+            -- [[ Configure Telescope ]]
+            -- See `:help telescope` and `:help telescope.setup()`
+            require('telescope').setup {
+                -- You can put your default mappings / updates / etc. in here
+                --  All the info you're looking for is in `:help telescope.setup()`
+                --
+                -- defaults = {
+                --   mappings = {
+                --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+                --   },
+                -- },
+                -- pickers = {}
+                extensions = {
+                    ['ui-select'] = {
+                        require('telescope.themes').get_dropdown(),
+                    },
+                },
+            }
+
+            -- Enable Telescope extensions if they are installed
+            pcall(require('telescope').load_extension, 'fzf')
+            pcall(require('telescope').load_extension, 'ui-select')
+
+            -- See `:help telescope.builtin`
+            local builtin = require 'telescope.builtin'
+            vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
+            vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
+            vim.keymap.set('n', '<leader><leader>', builtin.find_files, { desc = '[S]earch [F]iles' })
+            vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
+            vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+            vim.keymap.set('n', '<leader>/', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+            vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+            vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+            vim.keymap.set('n', '<leader>so', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+            vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = '[ ] Find existing buffers' })
             vim.keymap.set('n', '<leader>.', function()
-                -- local utils = require 'telescope.utils'
-                -- fzf.find_files { cwd = utils.buffer_dir() }
-                fzf.files(function() return { cwd = vim.fn.expand('%:p:h') } end)
+                local utils = require 'telescope.utils'
+                builtin.find_files { cwd = utils.buffer_dir() }
             end, { desc = 'Find Files (root dir)' })
 
             -- Shortcut for searching your neovim configuration files
             vim.keymap.set('n', '<leader>sn', function()
                 fzf.files(function() return { cwd = vim.fn.stdpath 'config' } end)
             end, { desc = '[S]earch [N]eovim files' })
-
-            -- Slightly advanced example of overriding default behavior and theme
-            -- vim.keymap.set('n', '<leader>/', function()
-            --     -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
-            --     -- fzf.live_grep(function() return { cwd = vim.fn.expand('%:p:h') } end)
-            --     fzf.grep_curbuf()
-            --
-            --     -- You can pass additional configuration to telescope to change theme, layout, etc.
-            --     -- fzf.current_buffer_fuzzy_find(require('telescope.themes').get_ivy {
-            --     --     -- winblend = 10,
-            --     --     previewer = false,
-            --     -- })
-            -- end, { desc = '[/] Fuzzily search in current buffer' })
-
-            -- Also possible to pass additional configuration options.
-            --  See `:help telescope.fzf.live_grep()` for information about particular keys
-            -- vim.keymap.set('n', '<leader>s/', function() fzf.grep_curbuf() end, { desc = '[S]earch [/] in Open Files' })
         end
     },
     {
@@ -683,95 +715,119 @@ require('lazy').setup {
             vim.keymap.set('n', 'gh', '<cmd>diffget //3<CR>', { desc = '[ ] Diffget 3' })
         end,
     },
-    -- {
-    --     'nvim-treesitter/nvim-treesitter',
-    --     build = ':TSUpdate',
-    --     dependencies = {
-    --         {
-    --             'nvim-treesitter/nvim-treesitter-textobjects',
-    --             config = function()
-    --                 -- When in diff mode, we want to use the default
-    --                 -- vim text objects c & C instead of the treesitter ones.
-    --                 local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
-    --                 local configs = require 'nvim-treesitter.configs'
-    --                 for name, fn in pairs(move) do
-    --                     if name:find 'goto' == 1 then
-    --                         move[name] = function(q, ...)
-    --                             if vim.wo.diff then
-    --                                 local config = configs.get_module(
-    --                                         'textobjects.move')
-    --                                     [name] ---@type table<string,string>
-    --                                 for key, query in pairs(config or {}) do
-    --                                     if q == query and key:find '[%]%[][cC]' then
-    --                                         vim.cmd('normal! ' .. key)
-    --                                         return
-    --                                     end
-    --                                 end
-    --                             end
-    --                             return fn(q, ...)
-    --                         end
-    --                     end
-    --                 end
-    --             end,
-    --         },
-    --     },
-    --     config = function()
-    --         -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    --
-    --         ---@diagnostic disable-next-line: missing-fields
-    --         require('nvim-treesitter.configs').setup {
-    --             ensure_installed = {
-    --                 'bash',
-    --                 'c',
-    --                 'cpp',
-    --                 'fish',
-    --                 'html',
-    --                 'lua',
-    --                 'markdown',
-    --                 'ron',
-    --                 'rust',
-    --                 'toml',
-    --                 'vim',
-    --                 'vimdoc',
-    --                 'zig',
-    --             },
-    --             -- Autoinstall languages that are not installed
-    --             auto_install = true,
-    --             -- with gruvbox theme set this to false
-    --             highlight = { enable = false },
-    --             -- highlight = { enable = true },
-    --             indent = { enable = true },
-    --             incremental_selection = {
-    --                 enable = false,
-    --                 keymaps = {
-    --                     init_selection = '<C-space>',
-    --                     node_incremental = '<C-space>',
-    --                     scope_incremental = false,
-    --                     node_decremental = '<bs>',
-    --                 },
-    --             },
-    --             textobjects = {
-    --                 select = {
-    --                     enable = false,
-    --                 },
-    --                 move = {
-    --                     enable = false,
-    --                     -- goto_next_start = { [']f'] = '@function.outer', [']c'] = '@class.outer' },
-    --                     -- goto_next_end = { [']F'] = '@function.outer', [']C'] = '@class.outer' },
-    --                     -- goto_previous_start = { ['[f'] = '@function.outer', ['[c'] = '@class.outer' },
-    --                     -- goto_previous_end = { ['[F'] = '@function.outer', ['[C'] = '@class.outer' },
-    --                 },
-    --             },
-    --         }
-    --
-    --         -- There are additional nvim-treesitter modules that you can use to interact
-    --         -- with nvim-treesitter. You should go explore a few and see what interests you:
-    --         --
-    --         --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-    --         --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-    --         --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-    --     end,
-    -- },
+    {
+        'nvim-treesitter/nvim-treesitter',
+        build = ':TSUpdate',
+        dependencies = {
+            {
+                'nvim-treesitter/nvim-treesitter-textobjects',
+                config = function()
+                    -- When in diff mode, we want to use the default
+                    -- vim text objects c & C instead of the treesitter ones.
+                    local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
+                    local configs = require 'nvim-treesitter.configs'
+                    for name, fn in pairs(move) do
+                        if name:find 'goto' == 1 then
+                            move[name] = function(q, ...)
+                                if vim.wo.diff then
+                                    local config = configs.get_module(
+                                            'textobjects.move')
+                                        [name] ---@type table<string,string>
+                                    for key, query in pairs(config or {}) do
+                                        if q == query and key:find '[%]%[][cC]' then
+                                            vim.cmd('normal! ' .. key)
+                                            return
+                                        end
+                                    end
+                                end
+                                return fn(q, ...)
+                            end
+                        end
+                    end
+                end,
+            },
+        },
+        config = function()
+            -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+
+            ---@diagnostic disable-next-line: missing-fields
+            require('nvim-treesitter.configs').setup {
+                ensure_installed = {
+                    'bash',
+                    'c',
+                    'cpp',
+                    'diff',
+                    'fish',
+                    'html',
+                    'json',
+                    'lua',
+                    'markdown',
+                    'markdown_inline',
+                    'odin',
+                    'ron',
+                    'rust',
+                    'toml',
+                    'vim',
+                    'vimdoc',
+                    'yaml',
+                    'zig',
+                },
+                -- Autoinstall languages that are not installed
+                auto_install = true,
+                -- with gruvbox theme set this to false
+                highlight = { enable = false },
+                -- highlight = { enable = true },
+                indent = { enable = true },
+                incremental_selection = {
+                    enable = false,
+                    keymaps = {
+                        init_selection = '<C-space>',
+                        node_incremental = '<C-space>',
+                        scope_incremental = false,
+                        node_decremental = '<bs>',
+                    },
+                },
+                textobjects = {
+                    select = {
+                        enable = true,
+                        -- Automatically jump forward to textobj, similar to targets.vim
+                        lookahead = true,
+                        keymaps = {
+                            -- You can use the capture groups defined in textobjects.scm
+                            ["af"] = "@function.outer",
+                            ["if"] = "@function.inner",
+                            ["ac"] = "@class.outer",
+                            -- You can optionally set descriptions to the mappings (used in the desc parameter of
+                            -- nvim_buf_set_keymap) which plugins like which-key display
+                            ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
+                            -- You can also use captures from other query groups like `locals.scm`
+                            ["as"] = { query = "@local.scope", query_group = "locals", desc = "Select language scope" },
+                        },
+                        selection_modes = {
+                            ['@parameter.outer'] = 'v', -- charwise
+                            ['@function.outer'] = 'V', -- linewise
+                            ['@class.outer'] = '<c-v>', -- blockwise
+                        },
+                        include_surrounding_whitespace = true,
+                    },
+                    move = {
+                        enable = true,
+                        goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer", ["]a"] = "@parameter.inner" },
+                        goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer", ["]A"] = "@parameter.inner" },
+                        goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer", ["[a"] = "@parameter.inner" },
+                        goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer", ["[A"] = "@parameter.inner" },
+                    },
+                },
+            }
+
+            -- There are additional nvim-treesitter modules that you can use to interact
+            -- with nvim-treesitter. You should go explore a few and see what interests you:
+            --
+            --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
+            --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
+            --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+        end,
+    },
     {
         "wincent/base16-nvim",
         lazy = false,    -- load at start
