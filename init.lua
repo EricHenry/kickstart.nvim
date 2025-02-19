@@ -598,7 +598,8 @@ require('lazy').setup {
         config = function()
             -- calling `setup` is optional for customization
             local fzf = require("fzf-lua")
-            fzf.setup({ 'max-perf', winopts = { split = "belowright new", preview = { hidden = 'hidden' } } })
+            -- fzf.setup({ 'max-perf', winopts = { split = "belowright new", preview = { hidden = 'hidden' } } })
+            fzf.setup({ 'max-perf', winopts = { split = "belowright new", } })
 
             vim.keymap.set('n', '<leader>sh', function() fzf.helptags() end, { desc = '[S]earch [H]elp' })
             vim.keymap.set('n', '<leader>sk', function() fzf.keymaps() end, { desc = '[S]earch [K]eymaps' })
