@@ -496,20 +496,20 @@ require('lazy').setup {
             -- require('mini.completion').setup()
         end
     },
-    {
-        "folke/flash.nvim",
-        event = "VeryLazy",
-        ---@type Flash.Config
-        opts = {},
-        -- stylua: ignore
-        keys = {
-            { "gw", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-            { "gW", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-            -- { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
-            -- { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-            { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
-        },
-    },
+    -- {
+    --     "folke/flash.nvim",
+    --     event = "VeryLazy",
+    --     ---@type Flash.Config
+    --     opts = {},
+    --     -- stylua: ignore
+    --     keys = {
+    --         { "gw", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+    --         { "gW", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    --         -- { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+    --         -- { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+    --         { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+    --     },
+    -- },
     {
         'stevearc/oil.nvim',
         opts = {},
@@ -520,9 +520,8 @@ require('lazy').setup {
                     "size",
                     "mtime",
                 },
-                buf_options = {
-                    buflisted = false,
-                    bufhidden = "hide",
+                view_options = {
+                    show_hidden = true,
                 },
             })
             vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
@@ -644,7 +643,7 @@ require('lazy').setup {
             local builtin = require 'telescope.builtin'
             vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
             vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-            vim.keymap.set('n', '<leader><leader>', builtin.find_files, { desc = '[S]earch [F]iles' })
+            vim.keymap.set('n', '<leader><leader>', function () builtin.find_files({hidden = true}) end, { desc = '[S]earch [F]iles' })
             vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
             vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
             vim.keymap.set('n', '<leader>/', builtin.live_grep, { desc = '[S]earch by [G]rep' })
