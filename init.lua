@@ -439,14 +439,14 @@ require('lazy').setup {
     {
     	'numToStr/Comment.nvim',
     	opts = {
-    		-- toggler = {
-    		-- 	line = '<C-c>',
-    		-- 	block = '<A-c>',
-    		-- },
-    		-- opleader = {
-    		-- 	line = '<C-c>',
-    		-- 	block = '<A-c>',
-    		-- },
+    		toggler = {
+    			line = '<C-c>',
+    			block = '<A-c>',
+    		},
+    		opleader = {
+    			line = '<C-c>',
+    			block = '<A-c>',
+    		},
     	},
     },
     -- NOTE: Plugins can also be configured to run lua code when they are loaded.
@@ -1019,8 +1019,8 @@ require('lazy').setup {
                 -- Autoinstall languages that are not installed
                 auto_install = true,
                 -- with gruvbox theme set this to false
-                highlight = { enable = false },
-                -- highlight = { enable = true },
+                -- highlight = { enable = false },
+                highlight = { enable = true },
                 indent = { enable = true },
                 incremental_selection = {
                     enable = false,
