@@ -492,10 +492,16 @@ require('lazy').setup {
         'lewis6991/gitsigns.nvim',
         opts = {},
     },
-    { 'mg979/vim-visual-multi',
+    {
+        'mg979/vim-visual-multi',
         branch = 'master',
     },
-    { 'preservim/tagbar' },
+    {
+        'preservim/tagbar',
+        config = function()
+            vim.g.tagbar_ctags_bin = "/home/e4/opt/ctags/ctags"
+        end
+    },
     {
         "kylechui/nvim-surround",
         version = "*", -- Use for stability; omit to use `main` branch for the latest features
