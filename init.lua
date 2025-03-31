@@ -557,23 +557,23 @@ require('lazy').setup {
             -- end, {remap=true})
         end
     },
-    -- {
-    --     'christoomey/vim-tmux-navigator',
-    --     cmd = {
-    --         'TmuxNavigateLeft',
-    --         'TmuxNavigateDown',
-    --         'TmuxNavigateUp',
-    --         'TmuxNavigateRight',
-    --         'TmuxNavigatePrevious',
-    --     },
-    --     keys = {
-    --         { '<c-h>',  '<cmd><C-U>TmuxNavigateLeft<cr>' },
-    --         { '<c-j>',  '<cmd><C-U>TmuxNavigateDown<cr>' },
-    --         { '<c-k>',  '<cmd><C-U>TmuxNavigateUp<cr>' },
-    --         { '<c-l>',  '<cmd><C-U>TmuxNavigateRight<cr>' },
-    --         { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
-    --     },
-    -- },
+    {
+        'christoomey/vim-tmux-navigator',
+        cmd = {
+            'TmuxNavigateLeft',
+            'TmuxNavigateDown',
+            'TmuxNavigateUp',
+            'TmuxNavigateRight',
+            'TmuxNavigatePrevious',
+        },
+        keys = {
+            { '<c-h>',  '<cmd><C-U>TmuxNavigateLeft<cr>' },
+            { '<c-j>',  '<cmd><C-U>TmuxNavigateDown<cr>' },
+            { '<c-k>',  '<cmd><C-U>TmuxNavigateUp<cr>' },
+            { '<c-l>',  '<cmd><C-U>TmuxNavigateRight<cr>' },
+            { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+        },
+    },
     {
         "hrsh7th/nvim-cmp",
         lazy = false,
@@ -1078,30 +1078,37 @@ require('lazy').setup {
             --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
         end,
     },
+    { "EdenEast/nightfox.nvim",
+        lazy = false,    -- load at start
+        priority = 1000, -- load first
+        config = function()
+            vim.cmd([[colorscheme nightfox]])
+        end
+    },
     {
         "wincent/base16-nvim",
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            vim.o.background = 'dark'
+            -- vim.o.background = 'dark'
             -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            vim.cmd([[colorscheme gruvbox-dark-hard]])
+            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
 
             -- XXX: hi Normal ctermbg=NONE
             -- Make comments more prominent -- they are important.
-            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            vim.api.nvim_set_hl(0, 'Comment', bools)
+            -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+            -- vim.api.nvim_set_hl(0, 'Comment', bools)
 
            -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
 
-            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
     },
     -- {
@@ -1169,7 +1176,7 @@ require('lazy').setup {
     --         -- "   Default: 253
     --         vim.g.seoul256_light_background = 252
     --
-    --         -- vim.o.background = 'dark'
+    --         vim.o.background = 'dark'
     --         vim.g.seoul256_srgb = 1
     --         -- vim.cmd([[colorscheme seoul256-light]])
     --         -- vim.cmd([[colorscheme seoul256]])
