@@ -1,9 +1,9 @@
 -- rust format on current file
-vim.keymap.set('n', '<leader>rf', ':RustFmt<CR>', { desc = 'RustFmt' })
+vim.keymap.set('n', '<leader>f', ':RustFmt<CR>', { desc = 'RustFmt' })
 
 -- make build on current file
-vim.keymap.set('n', '<leader>rb', ':make! build<CR>:copen<CR>', { desc = 'Cargo Build' })
--- vim.keymap.set('n', '<leader>rbo', ':make! build ', { desc = 'Cargo Build with options' })
+vim.keymap.set('n', '<leader>mm', ':make! build<CR>', { desc = 'Cargo Build' })
+vim.keymap.set('n', '<leader>mc', ':make! build ', { desc = 'Cargo Build with options' })
 
 require('nvim-treesitter.configs').setup {
     highlight = { enable = false },

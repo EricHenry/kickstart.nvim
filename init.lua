@@ -246,7 +246,7 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-vim.keymap.set('n', '<leader>d', ':copen', { desc = 'Open [Q]uickfix list' })
+vim.keymap.set('n', '<leader>d', ':copen<CR>', { desc = 'Open [Q]uickfix list' })
 
 -- "very magic" (less escaping needed) regexes by default
 vim.keymap.set('n', '?', '?\\v')
@@ -1026,7 +1026,7 @@ require('lazy').setup {
                 auto_install = true,
                 -- with gruvbox theme set this to false
                 -- highlight = { enable = false },
-                highlight = { enable = true },
+                highlight = { enable = false },
                 indent = { enable = true },
                 incremental_selection = {
                     enable = false,
@@ -1082,7 +1082,11 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            vim.cmd([[colorscheme nightfox]])
+            -- vim.cmd([[colorscheme nightfox]])
+            -- -- local operator = vim.api.nvim_get_hl(0, { name = "Operator" })
+            -- -- vim.api.nvim_set_hl(0, '@variable.member', { fg = operator.fg, })
+            -- local variable = vim.api.nvim_get_hl(0, { name = "Variable" })
+            -- vim.api.nvim_set_hl(0, '@variable.member', { fg = variable.fg, })
         end
     },
     {
@@ -1090,25 +1094,25 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            -- vim.o.background = 'dark'
+            vim.o.background = 'dark'
             -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
+            vim.cmd([[colorscheme gruvbox-dark-hard]])
 
             -- XXX: hi Normal ctermbg=NONE
             -- Make comments more prominent -- they are important.
-            -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            -- vim.api.nvim_set_hl(0, 'Comment', bools)
+            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+            vim.api.nvim_set_hl(0, 'Comment', bools)
 
            -- Make it clearly visible which argument we're at.
-            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
 
             -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
             --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
     },
     -- {
