@@ -654,6 +654,11 @@ require('lazy').setup {
     },
     {
         "ibhagwan/fzf-lua",
+        opts = {
+            -- must be false for the Ashen
+            -- integration to work properly!
+            fzf_colors = false,
+        },
         -- optional for icon support
         config = function()
             -- calling `setup` is optional for customization
@@ -1026,7 +1031,7 @@ require('lazy').setup {
                 auto_install = true,
                 -- with gruvbox theme set this to false
                 -- highlight = { enable = false },
-                highlight = { enable = false },
+                highlight = { enable = true },
                 indent = { enable = true },
                 incremental_selection = {
                     enable = false,
@@ -1090,31 +1095,53 @@ require('lazy').setup {
         end
     },
     {
-        "wincent/base16-nvim",
-        lazy = false,    -- load at start
-        priority = 1000, -- load first
-        config = function()
-            vim.o.background = 'dark'
-            -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            vim.cmd([[colorscheme gruvbox-dark-hard]])
-
-            -- XXX: hi Normal ctermbg=NONE
-            -- Make comments more prominent -- they are important.
-            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            vim.api.nvim_set_hl(0, 'Comment', bools)
-
-           -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-
-            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+        "ficcdaf/ashen.nvim",
+        -- optional but recommended,
+        -- pin to the latest stable release:
+        tag = "*",
+        lazy = false,
+        priority = 1000,
+        -- configuration is optional!
+        opts = {
+            -- your settings here
+        },
+        config = function() 
+            require("ashen").setup({
+                -- your settings here
+                colors = {
+                    background = "#1d2021"
+                }
+            })
+            -- theme must be loaded *after* setup!
+            vim.cmd("colorscheme ashen")
         end
-    },
+    }, 
+    -- {
+    --     "wincent/base16-nvim",
+    --     lazy = false,    -- load at start
+    --     priority = 1000, -- load first
+    --     config = function()
+    --         vim.o.background = 'dark'
+    --         -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
+    --         vim.cmd([[colorscheme gruvbox-dark-hard]])
+    --
+    --         -- XXX: hi Normal ctermbg=NONE
+    --         -- Make comments more prominent -- they are important.
+    --         local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+    --         vim.api.nvim_set_hl(0, 'Comment', bools)
+    --
+    --        -- Make it clearly visible which argument we're at.
+    --         local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+    --
+    --         -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+    --         --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+    --         local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+    --         vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+    --         vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+    --         vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+    --         vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+    --     end
+    -- },
     -- {
     --     'projekt0n/github-nvim-theme',
     --     name = 'github-theme',
