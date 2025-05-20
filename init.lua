@@ -615,17 +615,17 @@ require('lazy').setup {
                 }),
             }
 
-            vim.diagnostic.config {
-                -- update_in_insert = true,
-                float = {
-                    focusable = false,
-                    style = 'minimal',
-                    border = 'rounded',
-                    source = 'always',
-                    header = '',
-                    prefix = '',
-                },
-            }
+            -- vim.diagnostic.config {
+            --     -- update_in_insert = true,
+            --     float = {
+            --         focusable = false,
+            --         style = 'minimal',
+            --         border = 'rounded',
+            --         source = 'always',
+            --         header = '',
+            --         prefix = '',
+            --     },
+            -- }
         end,
     },
     {
@@ -1042,7 +1042,32 @@ require('lazy').setup {
                 -- Autoinstall languages that are not installed
                 auto_install = true,
                 -- with gruvbox theme set this to false
-                highlight = { enable = false },
+                highlight = {
+                    enable = true,
+                    -- disable = function(lang, buf)
+                    --     if lang == "rust" then
+                    --         print("disabled treesitter for rust")
+                    --         return true
+                    --     end
+                    --     local max_filesize = 100 * 1024 -- 100 KB
+                    --     local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                    --     if ok and stats and stats.size > max_filesize then
+                    --         vim.notify(
+                    --             "File larger than 100KB treesitter disabled for performance",
+                    --             vim.log.levels.WARN,
+                    --             { title = "Treesitter" }
+                    --         )
+                    --         return true
+                    --     end
+                    -- end,
+
+                    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+                    -- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
+                    -- Using this option may slow down your editor, and you may see some duplicate highlights.
+                    -- Instead of true it can also be a list of languages
+                    -- additional_vim_regex_highlighting = { "markdown" },
+                },
+                -- highlight = { enable = true },
                 -- highlight = { enable = true },
                 indent = { enable = true },
                 incremental_selection = {
@@ -1095,39 +1120,22 @@ require('lazy').setup {
             --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
         end,
     },
-    { "EdenEast/nightfox.nvim",
-        lazy = false,    -- load at start
-        priority = 1000, -- load first
+    {
+        "vague2k/vague.nvim",
         config = function()
-            -- vim.cmd([[colorscheme nightfox]])
-            -- -- local operator = vim.api.nvim_get_hl(0, { name = "Operator" })
-            -- -- vim.api.nvim_set_hl(0, '@variable.member', { fg = operator.fg, })
-            -- local variable = vim.api.nvim_get_hl(0, { name = "Variable" })
-            -- vim.api.nvim_set_hl(0, '@variable.member', { fg = variable.fg, })
+            -- NOTE: you do not need to call setup if you don't want to.
+            require("vague").setup({
+                -- optional configuration here
+            })
+            vim.cmd("colorscheme vague")
+
+            -- local status = vim.api.nvim_get_hl(0, { name = "Comment" })
+            -- vim.api.nvim_set_hl(0, "LineNr", { fg = status.guifg, bg = status.guibg})
+            -- vim.api.nvim_set_hl(0, "SignColumn", { fg = status.fg })
+            -- vim.api.nvim_set_hl(0, "FoldColumn", { bg = "#1e1e2e" })
+
         end
     },
-    {
-        "ficcdaf/ashen.nvim",
-        -- optional but recommended,
-        -- pin to the latest stable release:
-        tag = "*",
-        lazy = false,
-        priority = 1000,
-        -- configuration is optional!
-        opts = {
-            -- your settings here
-        },
-        config = function() 
-            require("ashen").setup({
-                -- your settings here
-                colors = {
-                    background = "#1d2021"
-                }
-            })
-            -- theme must be loaded *after* setup!
-            -- vim.cmd("colorscheme ashen")
-        end
-    }, 
     {
         "wincent/base16-nvim",
         lazy = false,    -- load at start
@@ -1135,12 +1143,12 @@ require('lazy').setup {
         config = function()
             vim.o.background = 'dark'
             -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            vim.cmd([[colorscheme gruvbox-dark-hard]])
+            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
 
             -- XXX: hi Normal ctermbg=NONE
             -- Make comments more prominent -- they are important.
             local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            vim.api.nvim_set_hl(0, 'Comment', bools)
+            -- vim.api.nvim_set_hl(0, 'Comment', bools)
 
            -- Make it clearly visible which argument we're at.
             local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
@@ -1148,10 +1156,10 @@ require('lazy').setup {
             -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
             --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
             local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
     },
     -- {
