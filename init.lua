@@ -83,7 +83,7 @@ I hope you enjoy your Neovim journey,
 
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
-
+local vim = vim
 -------------------------------------------------------------------------------
 --
 -- preferences
@@ -118,10 +118,10 @@ vim.opt.showmode = false
 vim.opt.clipboard = 'unnamedplus'
 
 local function paste()
-  return {
-    vim.fn.split(vim.fn.getreg(""), "\n"),
-    vim.fn.getregtype(""),
-  }
+    return {
+        vim.fn.split(vim.fn.getreg(""), "\n"),
+        vim.fn.getregtype(""),
+    }
 end
 
 -- vim.g.clipboard = {
@@ -196,6 +196,9 @@ vim.opt.tabstop = 4
 vim.opt.expandtab = true
 vim.opt.laststatus = 2
 
+-- fix netrw copy
+-- vim.g.netrw_keepdir = 0
+
 -------------------------------------------------------------------------------
 --
 -- hotkeys
@@ -255,7 +258,7 @@ vim.keymap.set('c', '%s/', '%sm/')
 
 
 -- open up config file
-vim.keymap.set( 'n', '<leader>co',
+vim.keymap.set('n', '<leader>co',
     function()
         local config_dir = vim.fn.stdpath 'config'
         local cmd = string.format(':e %s/init.lua', config_dir)
@@ -437,17 +440,17 @@ require('lazy').setup {
 
     -- "gc" to comment visual regions/lines
     {
-    	'numToStr/Comment.nvim',
-    	opts = {
-    		toggler = {
-    			line = '<C-c>',
-    			block = '<A-c>',
-    		},
-    		opleader = {
-    			line = '<C-c>',
-    			block = '<A-c>',
-    		},
-    	},
+        'numToStr/Comment.nvim',
+        opts = {
+            toggler = {
+                line = '<C-c>',
+                block = '<A-c>',
+            },
+            opleader = {
+                line = '<C-c>',
+                block = '<A-c>',
+            },
+        },
     },
     -- NOTE: Plugins can also be configured to run lua code when they are loaded.
     --
@@ -470,6 +473,18 @@ require('lazy').setup {
     --         require('nvim-rooter').setup()
     --     end,
     -- },
+    {
+        "vague2k/vague.nvim",
+        config = function()
+            require("vague").setup({ })
+            vim.cmd("colorscheme vague")
+
+            -- local status = vim.api.nvim_get_hl(0, { name = "Comment" })
+            -- vim.api.nvim_set_hl(0, "LineNr", { fg = status.guifg, bg = status.guibg})
+            -- vim.api.nvim_set_hl(0, "SignColumn", { fg = status.fg })
+            -- vim.api.nvim_set_hl(0, "FoldColumn", { bg = "#1e1e2e" })
+        end
+    },
     -- better %
     {
         'andymass/vim-matchup',
@@ -499,7 +514,7 @@ require('lazy').setup {
     {
         'preservim/tagbar',
         config = function()
-            vim.g.tagbar_ctags_bin = "/home/e4/opt/ctags/ctags"
+            vim.g.tagbar_ctags_bin = "~/opt/ctags/ctags"
         end
     },
     {
@@ -512,50 +527,38 @@ require('lazy').setup {
             })
         end
     },
-    -- {
-    --     'stevearc/oil.nvim',
-    --     opts = {},
-    --     config = function()
-    --         require("oil").setup({
-    --             columns = {
-    --                 "permissions",
-    --                 "size",
-    --                 "mtime",
-    --             },
-    --             view_options = {
-    --                 show_hidden = true,
-    --              },
-    --         })
-    --         vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
-    --     end
-    -- },
-    -- { 'tpope/vim-vinegar' },
+    {
+        'stevearc/oil.nvim',
+        opts = {},
+        lazy = false,
+        config = function()
+            require("oil").setup({
+                columns = {
+                    "permissions",
+                    "size",
+                    "mtime",
+                },
+                view_options = {
+                    show_hidden = true,
+                 },
+            })
+            vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+        end
+    },
     {
         'smoka7/hop.nvim',
         version = "*",
         opts = {
             keys = 'etovxqpdygfblzhckisuran'
         },
-        config = function() 
+        config = function()
             -- place this in one of your configuration file(s)
             local hop = require('hop')
             hop.setup {}
             local directions = require('hop.hint').HintDirection
             vim.keymap.set('', 'gw', function()
                 hop.hint_words()
-            end, {remap=true})
-            -- vim.keymap.set('', 'f', function()
-            --     hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
-            -- end, {remap=true})
-            -- vim.keymap.set('', 'F', function()
-            --     hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-            -- end, {remap=true})
-            -- vim.keymap.set('', 't', function()
-            --     hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-            -- end, {remap=true})
-            -- vim.keymap.set('', 'T', function()
-            --     hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-            -- end, {remap=true})
+            end, { remap = true })
         end
     },
     {
@@ -614,18 +617,6 @@ require('lazy').setup {
                     { name = 'buffer' },
                 }),
             }
-
-            -- vim.diagnostic.config {
-            --     -- update_in_insert = true,
-            --     float = {
-            --         focusable = false,
-            --         style = 'minimal',
-            --         border = 'rounded',
-            --         source = 'always',
-            --         header = '',
-            --         prefix = '',
-            --     },
-            -- }
         end,
     },
     {
@@ -664,7 +655,7 @@ require('lazy').setup {
         config = function()
             -- calling `setup` is optional for customization
             local fzf = require("fzf-lua")
-            fzf.setup({ 
+            fzf.setup({
                 'max-perf',
                 winopts = {
                     split = "belowright new",
@@ -757,6 +748,91 @@ require('lazy').setup {
 
             vim.keymap.set('n', 'gu', '<cmd>diffget //2<CR>', { desc = '[ ] Diffget 2' })
             vim.keymap.set('n', 'gh', '<cmd>diffget //3<CR>', { desc = '[ ] Diffget 3' })
+        end,
+    },
+    {
+        'nvim-treesitter/nvim-treesitter',
+        build = ':TSUpdate',
+        dependencies = {
+            {
+                'nvim-treesitter/nvim-treesitter-textobjects',
+                config = function()
+                    -- When in diff mode, we want to use the default
+                    -- vim text objects c & C instead of the treesitter ones.
+                    local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
+                    local configs = require 'nvim-treesitter.configs'
+                    for name, fn in pairs(move) do
+                        if name:find 'goto' == 1 then
+                            move[name] = function(q, ...)
+                                if vim.wo.diff then
+                                    local config = configs.get_module(
+                                            'textobjects.move')
+                                        [name] ---@type table<string,string>
+                                    for key, query in pairs(config or {}) do
+                                        if q == query and key:find '[%]%[][cC]' then
+                                            vim.cmd('normal! ' .. key)
+                                            return
+                                        end
+                                    end
+                                end
+                                return fn(q, ...)
+                            end
+                        end
+                    end
+                end,
+            },
+        },
+        config = function()
+            -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+
+            ---@diagnostic disable-next-line: missing-fields
+            require('nvim-treesitter.configs').setup {
+                -- Autoinstall languages that are not installed
+                auto_install = true,
+                -- with gruvbox theme set this to false
+                highlight = { enable = true, },
+                indent = { enable = true },
+                incremental_selection = {
+                    enable = false,
+                    keymaps = {
+                        init_selection = '<C-space>',
+                        node_incremental = '<C-space>',
+                        scope_incremental = false,
+                        node_decremental = '<bs>',
+                    },
+                },
+                textobjects = {
+                    select = {
+                        enable = true,
+                        -- Automatically jump forward to textobj, similar to targets.vim
+                        lookahead = true,
+                        keymaps = {
+                            -- You can use the capture groups defined in textobjects.scm
+                            ["af"] = "@function.outer",
+                            ["if"] = "@function.inner",
+                            ["ac"] = "@class.outer",
+                            -- You can optionally set descriptions to the mappings (used in the desc parameter of
+                            -- nvim_buf_set_keymap) which plugins like which-key display
+                            ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
+                            -- You can also use captures from other query groups like `locals.scm`
+                            ["as"] = { query = "@local.scope", query_group = "locals", desc = "Select language scope" },
+                        },
+                        selection_modes = {
+                            ['@parameter.outer'] = 'v', -- charwise
+                            ['@function.outer'] = 'V',  -- linewise
+                            ['@class.outer'] = '<c-v>', -- blockwise
+                        },
+                        -- include_surrounding_whitespace = true,
+                    },
+                    move = {
+                        enable = true,
+                        goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer", ["]a"] = "@parameter.inner" },
+                        goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer", ["]A"] = "@parameter.inner" },
+                        goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer", ["[a"] = "@parameter.inner" },
+                        goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer", ["[A"] = "@parameter.inner" },
+                    },
+                },
+            }
         end,
     },
     -- inline function signatures
@@ -982,267 +1058,6 @@ require('lazy').setup {
     --     end,
     -- },
     -- Highlight, edit, and navigate code
-    {
-        'nvim-treesitter/nvim-treesitter',
-        build = ':TSUpdate',
-        dependencies = {
-            {
-                'nvim-treesitter/nvim-treesitter-textobjects',
-                config = function()
-                    -- When in diff mode, we want to use the default
-                    -- vim text objects c & C instead of the treesitter ones.
-                    local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
-                    local configs = require 'nvim-treesitter.configs'
-                    for name, fn in pairs(move) do
-                        if name:find 'goto' == 1 then
-                            move[name] = function(q, ...)
-                                if vim.wo.diff then
-                                    local config = configs.get_module(
-                                            'textobjects.move')
-                                        [name] ---@type table<string,string>
-                                    for key, query in pairs(config or {}) do
-                                        if q == query and key:find '[%]%[][cC]' then
-                                            vim.cmd('normal! ' .. key)
-                                            return
-                                        end
-                                    end
-                                end
-                                return fn(q, ...)
-                            end
-                        end
-                    end
-                end,
-            },
-        },
-        config = function()
-            -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-
-            ---@diagnostic disable-next-line: missing-fields
-            require('nvim-treesitter.configs').setup {
-                ensure_installed = {
-                    'bash',
-                    'c',
-                    'cpp',
-                    'diff',
-                    'fish',
-                    'html',
-                    'json',
-                    'lua',
-                    'markdown',
-                    'markdown_inline',
-                    'odin',
-                    'ron',
-                    'rust',
-                    'toml',
-                    'vim',
-                    'vimdoc',
-                    'yaml',
-                    'zig',
-                },
-                -- Autoinstall languages that are not installed
-                auto_install = true,
-                -- with gruvbox theme set this to false
-                highlight = {
-                    enable = true,
-                    -- disable = function(lang, buf)
-                    --     if lang == "rust" then
-                    --         print("disabled treesitter for rust")
-                    --         return true
-                    --     end
-                    --     local max_filesize = 100 * 1024 -- 100 KB
-                    --     local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-                    --     if ok and stats and stats.size > max_filesize then
-                    --         vim.notify(
-                    --             "File larger than 100KB treesitter disabled for performance",
-                    --             vim.log.levels.WARN,
-                    --             { title = "Treesitter" }
-                    --         )
-                    --         return true
-                    --     end
-                    -- end,
-
-                    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-                    -- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
-                    -- Using this option may slow down your editor, and you may see some duplicate highlights.
-                    -- Instead of true it can also be a list of languages
-                    -- additional_vim_regex_highlighting = { "markdown" },
-                },
-                -- highlight = { enable = true },
-                -- highlight = { enable = true },
-                indent = { enable = true },
-                incremental_selection = {
-                    enable = false,
-                    keymaps = {
-                        init_selection = '<C-space>',
-                        node_incremental = '<C-space>',
-                        scope_incremental = false,
-                        node_decremental = '<bs>',
-                    },
-                },
-                textobjects = {
-                    select = {
-                        enable = true,
-                        -- Automatically jump forward to textobj, similar to targets.vim
-                        lookahead = true,
-                        keymaps = {
-                            -- You can use the capture groups defined in textobjects.scm
-                            ["af"] = "@function.outer",
-                            ["if"] = "@function.inner",
-                            ["ac"] = "@class.outer",
-                            -- You can optionally set descriptions to the mappings (used in the desc parameter of
-                            -- nvim_buf_set_keymap) which plugins like which-key display
-                            ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
-                            -- You can also use captures from other query groups like `locals.scm`
-                            ["as"] = { query = "@local.scope", query_group = "locals", desc = "Select language scope" },
-                        },
-                        selection_modes = {
-                            ['@parameter.outer'] = 'v', -- charwise
-                            ['@function.outer'] = 'V', -- linewise
-                            ['@class.outer'] = '<c-v>', -- blockwise
-                        },
-                        -- include_surrounding_whitespace = true,
-                    },
-                    move = {
-                        enable = true,
-                        goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer", ["]a"] = "@parameter.inner" },
-                        goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer", ["]A"] = "@parameter.inner" },
-                        goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer", ["[a"] = "@parameter.inner" },
-                        goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer", ["[A"] = "@parameter.inner" },
-                    },
-                },
-            }
-
-            -- There are additional nvim-treesitter modules that you can use to interact
-            -- with nvim-treesitter. You should go explore a few and see what interests you:
-            --
-            --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-            --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-            --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-        end,
-    },
-    {
-        "vague2k/vague.nvim",
-        config = function()
-            -- NOTE: you do not need to call setup if you don't want to.
-            require("vague").setup({
-                -- optional configuration here
-            })
-            vim.cmd("colorscheme vague")
-
-            -- local status = vim.api.nvim_get_hl(0, { name = "Comment" })
-            -- vim.api.nvim_set_hl(0, "LineNr", { fg = status.guifg, bg = status.guibg})
-            -- vim.api.nvim_set_hl(0, "SignColumn", { fg = status.fg })
-            -- vim.api.nvim_set_hl(0, "FoldColumn", { bg = "#1e1e2e" })
-
-        end
-    },
-    {
-        "wincent/base16-nvim",
-        lazy = false,    -- load at start
-        priority = 1000, -- load first
-        config = function()
-            vim.o.background = 'dark'
-            -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
-
-            -- XXX: hi Normal ctermbg=NONE
-            -- Make comments more prominent -- they are important.
-            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            -- vim.api.nvim_set_hl(0, 'Comment', bools)
-
-           -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-
-            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
-        end
-    },
-    -- {
-    --     'projekt0n/github-nvim-theme',
-    --     name = 'github-theme',
-    --     lazy = false, -- make sure we load this during startup if it is your main colorscheme
-    --     priority = 1000, -- make sure to load this before all the other start plugins
-    --     config = function()
-    --         -- require('github-theme').setup({ 
-    --         --     -- palettes = palettes 
-    --         --     palettes = {
-    --         --         -- Custom duskfox with black background
-    --         --         github_dark = {
-    --         --             bg1 = '#000000', -- Black background
-    --         --             bg0 = '#1d1d2b', -- Alt backgrounds (floats, statusline, ...)
-    --         --             bg3 = '#121820', -- 55% darkened from stock
-    --         --             sel0 = '#131b24', -- 55% darkened from stock
-    --         --         },
-    --         --     },
-    --         -- })
-    --
-    --         require('github-theme').setup({
-    --             palettes = { },
-    --             specs = {
-    --                 github_dark = {
-    --                     bg1 = '#24292e', -- Black background
-    --                 },
-    --             },
-    --         })
-    --
-    --         vim.cmd('colorscheme github_dark')
-    --         -- vim.cmd('colorscheme github_dark_default')
-    --     end,
-    -- },
-    -- {
-    --     "ellisonleao/gruvbox.nvim",
-    --     priority = 1000,
-    --     config = function()
-    --         -- require("gruvbox").setup({ contrast = "hard" })
-    --         --
-    --         -- vim.o.background = "dark" -- or "light" for light mode
-    --         -- vim.cmd([[colorscheme gruvbox]])
-    --         --
-    --         -- -- Make comments more prominent -- they are important.
-    --         -- local orange = vim.api.nvim_get_hl(0, { name = 'GruvboxOrange' })
-    --         -- vim.api.nvim_set_hl(0, 'Comment', orange)
-    --         --
-    --         -- local white = vim.api.nvim_get_hl(0, { name = 'GruvboxFg1' })
-    --         -- vim.api.nvim_set_hl(0, 'Delimiter', white)
-    --         -- vim.api.nvim_set_hl(0, 'Operator', white)
-    --         -- vim.api.nvim_set_hl(0, 'MatchParens', white)
-    --         -- vim.api.nvim_set_hl(0, '@constructor.lua', white)
-    --     end
-    -- },
-    -- {
-    --     "junegunn/seoul256.vim",
-    --     config = function()
-    --         -- " seoul256 (dark):
-    --         -- "   Range:   233 (darkest) ~ 239 (lightest)
-    --         -- "   Default: 237
-    --         vim.g.seoul256_background = 234
-    --
-    --         -- " seoul256 (light):
-    --         -- "   Range:   252 (darkest) ~ 256 (lightest)
-    --         -- "   Default: 253
-    --         vim.g.seoul256_light_background = 252
-    --
-    --         vim.o.background = 'dark'
-    --         vim.g.seoul256_srgb = 1
-    --         -- vim.cmd([[colorscheme seoul256-light]])
-    --         -- vim.cmd([[colorscheme seoul256]])
-    --     end
-    -- },
-    -- {
-    --     "amitds1997/remote-nvim.nvim",
-    --     version = "*",                       -- Pin to GitHub releases
-    --     dependencies = {
-    --         "nvim-lua/plenary.nvim",         -- For standard functions
-    --         "MunifTanjim/nui.nvim",          -- To build the plugin UI
-    --         "nvim-telescope/telescope.nvim", -- For picking b/w different remote methods
-    --     },
-    --     config = true,
-    -- }
     -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
     -- init.lua. If you want these files, they are in the repository, so you can just download them and
     -- put them in the right spots if you want.
