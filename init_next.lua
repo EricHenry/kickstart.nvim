@@ -16,6 +16,8 @@ vim.opt.splitbelow = true
 vim.opt.inccommand = 'split' -- Preview substitutions live, as you type!
 vim.opt.cursorline = true -- Show which line your cursor is on
 vim.opt.scrolloff = 10 -- Minimal number of screen lines to keep above and below the cursor.
+vim.opt.winborder = "rounded"
+vim.opt.shell = '/bin/bash' 
 
 -- more useful diffs (nvim -d)
 --- by ignoring whitespace
@@ -147,34 +149,38 @@ autocmd('BufEnter', {
 -- Plugins                                                                   --
 -------------------------------------------------------------------------------
 
----------------
--- gitsigns
----------------
-vim.pack.add("https://github.com/lewis6991/gitsigns.nvim")
+vim.pack.add({
+    { src = "https://github.com/lewis6991/gitsigns.nvim" },
+    { src = "https://github.com/vague2k/vague.nvim" },
+    { src = "https://github.com/preservim/tagbar" },
+    { src = "https://github.com/kylechui/nvim-surround" },
+    { src = "https://github.com/smoka7/hop.nvim" },
+    { src = "https://github.com/christoomey/vim-tmux-navigator" },
+    { src = "https://github.com/tpope/vim-fugitive" },
+    { src = "https://github.com/mbbill/undotree" },
+    { src = "https://github.com/ibhagwan/fzf-lua" },
+    { src = "https://github.com/nvim-treesitter/nvim-treesitter", branch = 'master' },
+})
 
 ---------------
 -- Color
 ---------------
-vim.pack.add("https://github.com/vague2k/vague.nvim")
 require("vague").setup({ })
 vim.cmd("colorscheme vague")
 
 ---------------
 -- Tagbar
 ---------------
-vim.pack.add("https://github.com/preservim/tagbar")
 vim.g.tagbar_ctags_bin = "~/opt/ctags/ctags"
 
 ---------------
 -- Surround
 ---------------
-vim.pack.add("https://github.com/kylechui/nvim-surround")
 require("nvim-surround").setup()
 
 ---------------
 -- Hop
 ---------------
-vim.pack.add("https://github.com/smoka7/hop.nvim")
 local hop = require('hop')
 hop.setup {
     keys = 'etovxqpdygfblzhckisuran'
@@ -185,24 +191,21 @@ vim.keymap.set('', 'gw', hop.hint_words, { remap = true })
 ---------------
 -- TMUX Nav
 ---------------
-vim.pack.add("https://github.com/christoomey/vim-tmux-navigator")
-vim.keymap.set('', '<c-h>',  '<cmd>TmuxNavigateLeft<cr>' )
-vim.keymap.set('', '<c-j>',  '<cmd>TmuxNavigateDown<cr>' )
-vim.keymap.set('', '<c-k>',  '<cmd>TmuxNavigateUp<cr>' )
-vim.keymap.set('', '<c-l>',  '<cmd>TmuxNavigateRight<cr>' )
-vim.keymap.set('', '<c-\\>', '<cmd>TmuxNavigatePrevious<cr>' )
+vim.keymap.set('', '<c-h>', '<cmd>TmuxNavigateLeft<cr>')
+vim.keymap.set('', '<c-j>', '<cmd>TmuxNavigateDown<cr>')
+vim.keymap.set('', '<c-k>', '<cmd>TmuxNavigateUp<cr>')
+vim.keymap.set('', '<c-l>', '<cmd>TmuxNavigateRight<cr>')
+vim.keymap.set('', '<c-\\>', '<cmd>TmuxNavigatePrevious<cr>')
 
 ---------------
 -- Undo tree
 ---------------
-vim.pack.add("https://github.com/mbbill/undotree")
 vim.keymap.set('n', '<leader>u', vim.cmd.UndotreeToggle)
 
 ---------------
 -- FZF Lua
 ---------------
 
-vim.pack.add("https://github.com/ibhagwan/fzf-lua")
 local fzf = require("fzf-lua")
 fzf.setup({
     'max-perf',
@@ -217,37 +220,31 @@ fzf.setup({
     },
 })
 
-vim.keymap.set('n', '<leader>sh', function() fzf.helptags() end, { desc = '[S]earch [H]elp' })
-vim.keymap.set('n', '<leader>sk', function() fzf.keymaps() end, { desc = '[S]earch [K]eymaps' })
-vim.keymap.set('n', '<leader><leader>', function() fzf.files() end, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<leader>sg', function() fzf.git_files() end, { desc = '[S]earch Git [F]iles' })
-vim.keymap.set('n', '<leader>ss', function() fzf.builtin() end, { desc = '[S]earch [S]elect Telescope' })
-vim.keymap.set('n', '<leader>sw', function() fzf.grep_cword() end, { desc = '[S]earch current [W]ord' })
-vim.keymap.set('n', '<leader>/', function() fzf.live_grep() end, { desc = '[S]earch project by [G]rep' })
-vim.keymap.set('n', '<leader>sd', function() fzf.diagnostics_document() end,
-    { desc = '[S]earch [D]iagnostics' })
-vim.keymap.set('n', '<leader>sD', function() fzf.diagnostics_workspace() end,
-    { desc = '[S]earch [D]iagnostics' })
-vim.keymap.set('n', '<leader>sr', function() fzf.resume() end, { desc = '[S]earch [R]esume' })
-vim.keymap.set('n', '<leader>so', function() fzf.oldfiles() end,
-    { desc = '[S]earch Recent Files ("." for repeat)' })
-vim.keymap.set('n', '<leader>b', function() fzf.buffers() end, { desc = '[ ] Find existing buffers' })
+vim.keymap.set('n', '<leader>sh', fzf.helptags)
+vim.keymap.set('n', '<leader>sk', fzf.keymaps)
+vim.keymap.set('n', '<leader><leader>', fzf.files)
+vim.keymap.set('n', '<leader>sg', fzf.git_files)
+vim.keymap.set('n', '<leader>ss', fzf.builtin)
+vim.keymap.set('n', '<leader>sw', fzf.grep_cword)
+vim.keymap.set('n', '<leader>/', fzf.live_grep)
+vim.keymap.set('n', '<leader>sd', fzf.diagnostics_document)
+vim.keymap.set('n', '<leader>sD', fzf.diagnostics_workspace)
+vim.keymap.set('n', '<leader>sr', fzf.resume)
+vim.keymap.set('n', '<leader>so', fzf.oldfiles)
+vim.keymap.set('n', '<leader>b', fzf.buffers)
 vim.keymap.set('n', '<leader>.', function()
-    -- local utils = require 'telescope.utils'
-    -- fzf.find_files { cwd = utils.buffer_dir() }
     fzf.files(function() return { cwd = vim.fn.expand('%:p:h') } end)
-end, { desc = 'Find Files (root dir)' })
+end)
 
 -- Shortcut for searching your neovim configuration files
 vim.keymap.set('n', '<leader>sn', function()
     fzf.files(function() return { cwd = vim.fn.stdpath 'config' } end)
-end, { desc = '[S]earch [N]eovim files' })
+end)
 
 
 ---------------
 -- Fugitive
 ---------------
-vim.pack.add("https://github.com/tpope/vim-fugitive")
 vim.keymap.set('n', '<leader>gs', vim.cmd.Git)
 
 local Eh_Fugitive = vim.api.nvim_create_augroup('Eh_Fugitive', {})
