@@ -110,6 +110,7 @@ vim.opt.softtabstop = 4
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
 vim.opt.laststatus = 2
+vim.o.winborder = 'rounded'
 
 -- fix netrw copy
 -- vim.g.netrw_keepdir = 0
@@ -166,7 +167,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+-- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 vim.keymap.set('n', '<leader>d', ':copen<CR>', { desc = 'Open [Q]uickfix list' })
 
 -- "very magic" (less escaping needed) regexes by default
@@ -237,62 +238,6 @@ autocmd('BufEnter', {
     end
 })
 
---  This function gets run when an LSP attaches to a particular buffer.
---    That is to say, every time a new file is opened that is associated with
---    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
---    function will be executed to configure the current buffer
--- autocmd('LspAttach', {
---     group = ehGroup,
---     callback = function(event)
---         local map = function(keys, func, desc)
---             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
---         end
---
---         -- Jump to the definition of the word under your cursor.
---         --  This is where a variable was first declared, or where a function is defined, etc.
---         --  To jump back, press <C-T>.
---         local fzf = require("fzf-lua")
---         map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
---         map('gr', fzf.lsp_references, '[G]oto [R]eferences')
---         map('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
---         map('gy', vim.lsp.buf.type_definition, 'Type [D]efinition')
---         map('<leader>ds', fzf.lsp_document_symbols, '[D]ocument [S]ymbols')
---         map('<leader>ws', fzf.lsp_live_workspace_symbols, '[W]orkspace [S]ymbols')
---         map('<leader>r', vim.lsp.buf.rename, '[R]e[n]ame')
---         map('<leader>a', vim.lsp.buf.code_action, '[C]ode [A]ction')
---         map('K', vim.lsp.buf.hover, 'Hover Documentation')
---         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
---         map('<leader>f', function()
---             vim.lsp.buf.format { async = true }
---             -- require('conform').format()
---         end, 'Format Code')
---
---         -- The following two autocommands are used to highlight references of the
---         -- word under your cursor when your cursor rests there for a little while.
---         --    See `:help CursorHold` for information about when this is executed
---         --
---         -- When you move your cursor, the highlights will be cleared (the second autocommand).
---         local client = vim.lsp.get_client_by_id(event.data.client_id)
---         if client and client.server_capabilities.documentHighlightProvider then
---             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
---                 buffer = event.buf,
---                 callback = vim.lsp.buf.document_highlight,
---             })
---
---             vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
---                 buffer = event.buf,
---                 callback = vim.lsp.buf.clear_references,
---             })
---         end
---
---         -- None of this semantics tokens business.
---         -- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
---         if client and client.server_capabilities.semanticTokensProvider then
---             client.server_capabilities.semanticTokensProvider = nil
---         end
---     end,
--- })
-
 -------------------------------------------------------------------------------
 --
 -- plugin configuration
@@ -333,41 +278,53 @@ require('lazy').setup {
         },
     },
     {
+        'maxmx03/solarized.nvim',
+        lazy = false,
+        priority = 1000,
+        ---@type solarized.config
+        opts = {},
+        config = function(_, opts)
+            -- vim.o.termguicolors = true
+            -- vim.o.background = 'light'
+            -- require('solarized').setup(opts)
+            -- vim.cmd.colorscheme 'solarized'
+        end,
+    },
+    {
         "wincent/base16-nvim",
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            vim.o.background = 'dark'
-            -- vim.cmd([[colorscheme base16-gruvbox-dark-hard]])
-            vim.cmd([[colorscheme gruvbox-dark-hard]])
-
-            -- XXX: hi Normal ctermbg=NONE
-            -- Make comments more prominent -- they are important.
-            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            vim.api.nvim_set_hl(0, 'Comment', bools)
-
-            -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-
+            -- vim.o.background = 'dark'
+            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
+            --
+            -- -- XXX: hi Normal ctermbg=NONE
+            -- -- Make comments more prominent -- they are important.
+            -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+            -- vim.api.nvim_set_hl(0, 'Comment', bools)
+            --
+            -- -- Make it clearly visible which argument we're at.
+            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
             -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
             --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+            --
+            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
     },
     {
         "vague2k/vague.nvim",
         config = function()
-            require("vague").setup({ })
-            -- vim.cmd("colorscheme vague")
+            require("vague").setup({ transparent = true })
+            vim.cmd("colorscheme vague")
 
-            -- local status = vim.api.nvim_get_hl(0, { name = "Comment" })
-            -- vim.api.nvim_set_hl(0, "LineNr", { fg = status.guifg, bg = status.guibg})
-            -- vim.api.nvim_set_hl(0, "SignColumn", { fg = status.fg })
-            -- vim.api.nvim_set_hl(0, "FoldColumn", { bg = "#1e1e2e" })
+            local status = vim.api.nvim_get_hl(0, { name = "Comment" })
+            vim.api.nvim_set_hl(0, "LineNr", { fg = status.guifg, bg = status.guibg})
+            vim.api.nvim_set_hl(0, "SignColumn", { fg = status.fg })
+            vim.api.nvim_set_hl(0, "FoldColumn", { bg = "#1e1e2e" })
         end
     },
     -- better %
@@ -377,16 +334,16 @@ require('lazy').setup {
             vim.g.matchup_matchparen_offscreen = { method = 'popup' }
         end,
     },
-    {
-        'kevinhwang91/nvim-bqf',
-        config = function()
-            require("bqf").setup({
-                preview = {
-                    auto_preview = false
-                }
-            });
-        end
-    },
+    -- {
+    --     'kevinhwang91/nvim-bqf',
+    --     config = function()
+    --         require("bqf").setup({
+    --             preview = {
+    --                 auto_preview = false
+    --             }
+    --         });
+    --     end
+    -- },
 
     { -- Adds git related signs to the gutter, as well as utilities for managing changes
         'lewis6991/gitsigns.nvim',
@@ -494,13 +451,21 @@ require('lazy').setup {
                     ['<C-y>'] = cmp.mapping.confirm { select = true },
                     ['<C-Space>'] = cmp.mapping.complete(),
                 },
-                sources = cmp.config.sources({
-                    { name = 'nvim_lsp' },
-                    { name = 'luasnip' }, -- For luasnip users.
-                    { name = 'path' },
-                }, {
-                    { name = 'buffer' },
-                }),
+                sources = cmp.config.sources( {
+                        { name = 'nvim_lsp' },
+                        { name = 'luasnip' }, -- For luasnip users.
+                        { name = 'path' },
+                    }, 
+                    {
+                        { 
+                            name = 'buffer',
+                            option = {
+                                get_bufnrs = function()
+                                    return vim.api.nvim_list_bufs()
+                                end
+                            }
+                        },
+                    }),
             }
         end,
     },
@@ -508,6 +473,43 @@ require('lazy').setup {
         'mbbill/undotree',
         config = function()
             vim.keymap.set('n', '<leader>u', vim.cmd.UndotreeToggle)
+        end,
+    },
+    {
+        'stevearc/quicker.nvim',
+        ft = "qf",
+        ---@module "quicker"
+        ---@type quicker.SetupOptions
+        opts = {},
+        config = function()
+            vim.keymap.set("n", "<leader>q", function()
+                require("quicker").toggle()
+            end, {
+                    desc = "Toggle quickfix",
+                })
+            vim.keymap.set("n", "<leader>l", function()
+                require("quicker").toggle({ loclist = true })
+            end, {
+                    desc = "Toggle loclist",
+                })
+            require("quicker").setup({
+                keys = {
+                    {
+                        ">",
+                        function()
+                            require("quicker").expand({ before = 2, after = 2, add_to_existing = true })
+                        end,
+                        desc = "Expand quickfix context",
+                    },
+                    {
+                        "<",
+                        function()
+                            require("quicker").collapse()
+                        end,
+                        desc = "Collapse quickfix context",
+                    },
+                },
+            })
         end,
     },
     {
@@ -656,7 +658,8 @@ require('lazy').setup {
                 -- Autoinstall languages that are not installed
                 auto_install = true,
                 -- with gruvbox theme set this to false
-                highlight = { enable = false, },
+                highlight = { enable = true, },
+                -- highlight = { enable = false, },
                 indent = { enable = true },
                 incremental_selection = {
                     enable = false,
@@ -701,88 +704,88 @@ require('lazy').setup {
             }
         end,
     },
-    {
-		-- 'neovim/nvim-lspconfig',
-		-- config = function()
-		-- 	-- Setup language servers.
-		--
-		-- 	-- Rust
-		-- 	vim.lsp.config('rust_analyzer', {
-		-- 		-- Server-specific settings. See `:help lspconfig-setup`
-		-- 		settings = {
-		-- 			["rust-analyzer"] = {
-		-- 				cargo = {
-		-- 					features = "all",
-		-- 				},
-		-- 				checkOnSave = {
-		-- 					enable = true,
-		-- 				},
-		-- 				check = {
-		-- 					command = "clippy",
-		-- 				},
-		-- 				imports = {
-		-- 					group = {
-		-- 						enable = false,
-		-- 					},
-		-- 				},
-		-- 				completion = {
-		-- 					postfix = {
-		-- 						enable = false,
-		-- 					},
-		-- 				},
-		-- 			},
-		-- 		},
-		-- 	})
-		-- 	vim.lsp.enable('rust_analyzer')
-		--
-		-- 	-- Global mappings.
-		-- 	-- See `:help vim.diagnostic.*` for documentation on any of the below functions
-		-- 	vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
-		-- 	vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
-		-- 	vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
-		-- 	vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
-		--
-		-- 	-- Use LspAttach autocommand to only map the following keys
-		-- 	-- after the language server attaches to the current buffer
-		-- 	vim.api.nvim_create_autocmd('LspAttach', {
-		-- 		group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-		-- 		callback = function(ev)
-		-- 			-- Enable completion triggered by <c-x><c-o>
-		-- 			vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-		--
-		-- 			-- Buffer local mappings.
-		-- 			-- See `:help vim.lsp.*` for documentation on any of the below functions
-		-- 			local opts = { buffer = ev.buf }
-		-- 			vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-		-- 			vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-		-- 			vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-		-- 			vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-		-- 			vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-		-- 			vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
-		-- 			vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
-		-- 			vim.keymap.set('n', '<leader>wl', function()
-		-- 				print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-		-- 			end, opts)
-		-- 			--vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
-		-- 			vim.keymap.set('n', '<leader>r', vim.lsp.buf.rename, opts)
-		-- 			vim.keymap.set({ 'n', 'v' }, '<leader>a', vim.lsp.buf.code_action, opts)
-		-- 			vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-		-- 			vim.keymap.set('n', '<leader>f', function()
-		-- 				vim.lsp.buf.format { async = true }
-		-- 			end, opts)
-		--
-		-- 			local client = vim.lsp.get_client_by_id(ev.data.client_id)
-		--
-		-- 			-- TODO: find some way to make this only apply to the current line.
-		-- 			-- if client.server_capabilities.inlayHintProvider then
-		-- 			--     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-		-- 			-- end
-		--
-		-- 			-- None of this semantics tokens business.
-		-- 			-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-		-- 			client.server_capabilities.semanticTokensProvider = nil
-		-- 		end,
-		-- 	})
-		-- end
-	},
+    -- {
+	-- 	'neovim/nvim-lspconfig',
+	-- 	config = function()
+	-- 		-- Setup language servers.
+	--
+	-- 		-- Rust
+	-- 		vim.lsp.config('rust_analyzer', {
+	-- 			-- Server-specific settings. See `:help lspconfig-setup`
+	-- 			settings = {
+	-- 				["rust-analyzer"] = {
+	-- 					cargo = {
+	-- 						features = "all",
+	-- 					},
+	-- 					checkOnSave = {
+	-- 						enable = true,
+	-- 					},
+	-- 					check = {
+	-- 						command = "clippy",
+	-- 					},
+	-- 					imports = {
+	-- 						group = {
+	-- 							enable = false,
+	-- 						},
+	-- 					},
+	-- 					completion = {
+	-- 						postfix = {
+	-- 							enable = false,
+	-- 						},
+	-- 					},
+	-- 				},
+	-- 			},
+	-- 		})
+	-- 		vim.lsp.enable('rust_analyzer')
+	--
+	-- 		-- Global mappings.
+	-- 		-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+	-- 		vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
+	-- 		vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
+	-- 		vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
+	-- 		vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
+	--
+	-- 		-- Use LspAttach autocommand to only map the following keys
+	-- 		-- after the language server attaches to the current buffer
+	-- 		vim.api.nvim_create_autocmd('LspAttach', {
+	-- 			group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+	-- 			callback = function(ev)
+	-- 				-- Enable completion triggered by <c-x><c-o>
+	-- 				vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+	--
+	-- 				-- Buffer local mappings.
+	-- 				-- See `:help vim.lsp.*` for documentation on any of the below functions
+	-- 				local opts = { buffer = ev.buf }
+	-- 				vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+	-- 				vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+	-- 				vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+	-- 				vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+	-- 				vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+	-- 				vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
+	-- 				vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
+	-- 				vim.keymap.set('n', '<leader>wl', function()
+	-- 					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+	-- 				end, opts)
+	-- 				--vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+	-- 				vim.keymap.set('n', '<leader>r', vim.lsp.buf.rename, opts)
+	-- 				vim.keymap.set({ 'n', 'v' }, '<leader>a', vim.lsp.buf.code_action, opts)
+	-- 				vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+	-- 				vim.keymap.set('n', '<leader>f', function()
+	-- 					vim.lsp.buf.format { async = true }
+	-- 				end, opts)
+	--
+	-- 				local client = vim.lsp.get_client_by_id(ev.data.client_id)
+	--
+	-- 				-- TODO: find some way to make this only apply to the current line.
+	-- 				-- if client.server_capabilities.inlayHintProvider then
+	-- 				--     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+	-- 				-- end
+	--
+	-- 				-- None of this semantics tokens business.
+	-- 				-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
+	-- 				client.server_capabilities.semanticTokensProvider = nil
+	-- 			end,
+	-- 		})
+	-- 	end
+	-- },
 }

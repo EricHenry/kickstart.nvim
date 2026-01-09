@@ -1,5 +1,5 @@
 -- rust format on current file
-vim.keymap.set('n', '<leader>f', ':RustFmt<CR>', { desc = 'RustFmt' })
+vim.keymap.set('n', '<leader>rf', ':RustFmt<CR>', { desc = 'RustFmt' })
 
 -- make build on current file
 vim.keymap.set('n', '<leader>mm', ':make! build<CR>', { desc = 'Cargo Build' })
