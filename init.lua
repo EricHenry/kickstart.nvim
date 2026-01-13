@@ -696,14 +696,13 @@ require('lazy').setup {
         opts = {},
         config = function()
             -- collapse the context on startup, annoying to include more
-            require("quicker").collapse()
-
             vim.keymap.set(
                 "n",
                 "<leader>q",
                 function()
                     local quicker = require("quicker")
                     quicker.toggle()
+                    quicker.collapse()
                 end,
                 { desc = "Toggle quickfix", }
             )
