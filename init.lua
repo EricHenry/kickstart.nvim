@@ -112,6 +112,8 @@ vim.opt.expandtab = true
 vim.opt.laststatus = 2
 vim.o.winborder = 'rounded'
 
+vim.opt.shortmess:append("T")
+
 -- fix netrw copy
 -- vim.g.netrw_keepdir = 0
 
@@ -828,59 +830,60 @@ require('lazy').setup {
 					-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
 					client.server_capabilities.semanticTokensProvider = nil
 
-                    local function echo_line_diagnostic()
-                        local line = vim.fn.line(".") - 1
-                        local diags = vim.diagnostic.get(0, { lnum = line })
+                    -- Track the last line we showed diagnostics for
+                    local last_diagnostic_line = -1
+                    local function echo_diagnostics()
+                        local bufnr = vim.api.nvim_get_current_buf()
+                        local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+                        local diagnostics = vim.diagnostic.get(bufnr, { lnum = line })
 
-                        if #diags == 0 then
-                            vim.api.nvim_echo({ { "" } }, false, {})
+                        if #diagnostics == 0 then
+                            if last_diagnostic_line ~= -1 then
+                                vim.api.nvim_echo({{'', 'Normal'}}, false, {})
+                                last_diagnostic_line = -1
+                            end
                             return
                         end
 
-                        table.sort(diags, function(a, b)
-                            return a.severity < b.severity
-                        end)
+                        local diag = diagnostics[1]
+                        -- Take only the first line of the message
+                        local message = diag.message:match("([^\n]+)") or diag.message
 
-                        local d = diags[1]
-                        local msg = d.message:gsub("\n", " ")
+                        local severity_map = {
+                            [vim.diagnostic.severity.ERROR] = { label = 'Error', hl = 'DiagnosticError' },
+                            [vim.diagnostic.severity.WARN] = { label = 'Warning', hl = 'DiagnosticWarn' },
+                            [vim.diagnostic.severity.INFO] = { label = 'Info', hl = 'DiagnosticInfo' },
+                            [vim.diagnostic.severity.HINT] = { label = 'Hint', hl = 'DiagnosticHint' },
+                        }
 
-                        -- Truncate to fit one cmdline
-                        local width = vim.o.columns - 1
-                        if #msg > width then
-                            msg = msg:sub(1, width - 1) .. "…"
+                        local severity_info = severity_map[diag.severity]
+                        local prefix = string.format('[%s] ', severity_info.label)
+                        local max_width = vim.o.columns - #prefix - 2
+
+                        if #message > max_width then
+                            message = message:sub(1, max_width - 3) .. '...'
                         end
 
-                        local hl = ({
-                            [vim.diagnostic.severity.ERROR] = "DiagnosticError",
-                            [vim.diagnostic.severity.WARN]  = "DiagnosticWarn",
-                            [vim.diagnostic.severity.INFO]  = "DiagnosticInfo",
-                            [vim.diagnostic.severity.HINT]  = "DiagnosticHint",
-                        })[d.severity]
+                        vim.api.nvim_echo({{prefix .. message, severity_info.hl}}, false, {})
 
-                        vim.api.nvim_echo(
-                            { { msg, hl } },
-                            false,
-                            {}
-                        )
+                        last_diagnostic_line = line
                     end
 
-                    -- show the single line diagnostics in the command area
-                    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-                        callback = echo_line_diagnostic,
+                    vim.api.nvim_create_autocmd({ 'CursorHold' }, {
+                        callback = echo_diagnostics,
                     })
 
-                    -- when line doesn't have error clear the message
-                    vim.api.nvim_create_autocmd(
-                        { "BufLeave", "InsertEnter" },
-                        {
-                            callback = function()
-                                vim.api.nvim_echo({ { "" } }, false, {})
-                            end,
-                        }
-                    )
-				end,
-			})
-		end
+                    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+                        callback = function()
+                            local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+                            if line ~= last_diagnostic_line and last_diagnostic_line ~= -1 then
+                                vim.api.nvim_echo({{'', 'Normal'}}, false, {})
+                                last_diagnostic_line = -1
+                            end
+                        end,
+                    }) end,
+            })
+        end
 	},
     {
         "folke/which-key.nvim",
