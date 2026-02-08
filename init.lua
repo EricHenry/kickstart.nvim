@@ -66,7 +66,7 @@ vim.opt.smartcase = true
 vim.opt.signcolumn = 'yes'
 
 -- Decrease update time
-vim.opt.updatetime = 250
+vim.opt.updatetime = 200
 vim.opt.timeoutlen = 300
 
 -- Configure how new splits should be opened
@@ -132,6 +132,9 @@ vim.keymap.set('n', '<C-f>', ':sus<CR>', { desc = 'Suspend', silent = true })
 -- Last Buffer
 vim.keymap.set('n', 'ga', '<cmd>e #<cr>', { desc = 'Switch to Other Buffer' })
 
+-- make missing : less annoying
+vim.keymap.set('n', ';', ':')
+
 -- open new file adjacent to current file
 vim.keymap.set('n', '<leader>o', ':e <C-R>=expand("%:p:h") . "/" <cr>')
 
@@ -164,11 +167,14 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
--- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 vim.keymap.set('n', '<leader>d', ':copen<CR>', { desc = 'Open [Q]uickfix list' })
+vim.diagnostic.config({
+    virtual_text = false,
+    signs = true,
+    underline = true,
+    float = false,
+})
+
 
 -- "very magic" (less escaping needed) regexes by default
 vim.keymap.set('n', '?', '?\\v')
@@ -238,6 +244,47 @@ autocmd('BufEnter', {
     end
 })
 
+-- Use LspAttach autocommand to only map the following keys
+-- after the language server attaches to the current buffer
+vim.api.nvim_create_autocmd('LspAttach', {
+    group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+    callback = function(ev)
+        -- Enable completion triggered by <c-x><c-o>
+        vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+        -- Buffer local mappings.
+        -- See `:help vim.lsp.*` for documentation on any of the below functions
+		local opts = { buffer = ev.buf }
+		vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+		vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+		vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+		vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+		vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+		vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
+		vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
+		vim.keymap.set('n', '<leader>wl', function()
+			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+		end, opts)
+		--vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+		vim.keymap.set('n', '<leader>r', vim.lsp.buf.rename, opts)
+		vim.keymap.set({ 'n', 'v' }, '<leader>a', vim.lsp.buf.code_action, opts)
+		vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+		vim.keymap.set('n', '<leader>f', function()
+			vim.lsp.buf.format { async = true }
+		end, opts)
+
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+
+		-- TODO: find some way to make this only apply to the current line.
+		-- if client.server_capabilities.inlayHintProvider then
+		--     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+		-- end
+
+		-- None of this semantics tokens business.
+		-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
+		client.server_capabilities.semanticTokensProvider = nil
+	end,
+})
 -------------------------------------------------------------------------------
 --
 -- plugin configuration
@@ -278,19 +325,6 @@ require('lazy').setup {
         },
     },
     {
-        'maxmx03/solarized.nvim',
-        lazy = false,
-        priority = 1000,
-        ---@type solarized.config
-        opts = {},
-        config = function(_, opts)
-            -- vim.o.termguicolors = true
-            -- vim.o.background = 'light'
-            -- require('solarized').setup(opts)
-            -- vim.cmd.colorscheme 'solarized'
-        end,
-    },
-    {
         "wincent/base16-nvim",
         lazy = false,    -- load at start
         priority = 1000, -- load first
@@ -313,42 +347,6 @@ require('lazy').setup {
             vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
             vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
             vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
-        end
-    },
-    {
-        'NTBBloodbath/doom-one.nvim',
-        config = function()
-            -- Add color to cursor
-            vim.g.doom_one_cursor_coloring = false
-            -- Set :terminal colors
-            vim.g.doom_one_terminal_colors = true
-            -- Enable italic comments
-            vim.g.doom_one_italic_comments = true
-            -- Enable TS support
-            vim.g.doom_one_enable_treesitter = true
-            -- Color whole diagnostic text or only underline
-            vim.g.doom_one_diagnostics_text_color = false
-            -- Enable transparent background
-            vim.g.doom_one_transparent_background = false
-
-            -- Pumblend transparency
-            vim.g.doom_one_pumblend_enable = false
-            vim.g.doom_one_pumblend_transparency = 20
-
-            -- Plugins integration
-            vim.g.doom_one_plugin_neorg = false
-            vim.g.doom_one_plugin_barbar = false
-            vim.g.doom_one_plugin_telescope = false
-            vim.g.doom_one_plugin_neogit = false
-            vim.g.doom_one_plugin_nvim_tree = false
-            vim.g.doom_one_plugin_dashboard = true
-            vim.g.doom_one_plugin_startify = false
-            vim.g.doom_one_plugin_whichkey = true
-            vim.g.doom_one_plugin_indent_blankline = false
-            vim.g.doom_one_plugin_vim_illuminate = false
-            vim.g.doom_one_plugin_lspsaga = false
-
-            -- vim.cmd("colorscheme doom-one")
         end
     },
     -- {
@@ -389,223 +387,6 @@ require('lazy').setup {
                 { 'filename', path = 1, }
             }
 
-            -- Below, is for doom layout
-            -- -- Color table for highlights
-            -- -- stylua: ignore
-            -- local colors = {
-            --     bg       = '#202328',
-            --     fg       = '#bbc2cf',
-            --     yellow   = '#ECBE7B',
-            --     cyan     = '#008080',
-            --     darkblue = '#081633',
-            --     green    = '#98be65',
-            --     orange   = '#FF8800',
-            --     violet   = '#a9a1e1',
-            --     magenta  = '#c678dd',
-            --     blue     = '#51afef',
-            --     red      = '#ec5f67',
-            -- }
-            --
-            -- local conditions = {
-            --     buffer_not_empty = function()
-            --         return vim.fn.empty(vim.fn.expand('%:t')) ~= 1
-            --     end,
-            --     hide_in_width = function()
-            --         return vim.fn.winwidth(0) > 80
-            --     end,
-            --     check_git_workspace = function()
-            --         local filepath = vim.fn.expand('%:p:h')
-            --         local gitdir = vim.fn.finddir('.git', filepath .. ';')
-            --         return gitdir and #gitdir > 0 and #gitdir < #filepath
-            --     end,
-            -- }
-            --
-            -- -- Config
-            -- local config = {
-            --     options = {
-            --         -- Disable sections and component separators
-            --         component_separators = '',
-            --         section_separators = '',
-            --         theme = {
-            --             -- We are going to use lualine_c an lualine_x as left and
-            --             -- right section. Both are highlighted by c theme .  So we
-            --             -- are just setting default looks o statusline
-            --             normal = { c = { fg = colors.fg, bg = colors.bg } },
-            --             inactive = { c = { fg = colors.fg, bg = colors.bg } },
-            --         },
-            --     },
-            --     sections = {
-            --         -- these are to remove the defaults
-            --         lualine_a = {},
-            --         lualine_b = {},
-            --         lualine_y = {},
-            --         lualine_z = {},
-            --         -- These will be filled later
-            --         lualine_c = {},
-            --         lualine_x = {},
-            --     },
-            --     inactive_sections = {
-            --         -- these are to remove the defaults
-            --         lualine_a = {},
-            --         lualine_b = {},
-            --         lualine_y = {},
-            --         lualine_z = {},
-            --         lualine_c = {},
-            --         lualine_x = {},
-            --     },
-            -- }
-            --
-            -- -- Inserts a component in lualine_c at left section
-            -- local function ins_left(component)
-            --     table.insert(config.sections.lualine_c, component)
-            -- end
-            --
-            -- -- Inserts a component in lualine_x at right section
-            -- local function ins_right(component)
-            --     table.insert(config.sections.lualine_x, component)
-            -- end
-            --
-            -- ins_left {
-            --     function()
-            --         return '▊'
-            --     end,
-            --     color = { fg = colors.blue }, -- Sets highlighting of component
-            --     padding = { left = 0, right = 1 }, -- We don't need space before this
-            -- }
-            --
-            -- ins_left {
-            --     -- mode component
-            --     function()
-            --         return ''
-            --     end,
-            --     color = function()
-            --         -- auto change color according to neovims mode
-            --         local mode_color = {
-            --             n = colors.red,
-            --             i = colors.green,
-            --             v = colors.blue,
-            --             [''] = colors.blue,
-            --             V = colors.blue,
-            --             c = colors.magenta,
-            --             no = colors.red,
-            --             s = colors.orange,
-            --             S = colors.orange,
-            --             [''] = colors.orange,
-            --             ic = colors.yellow,
-            --             R = colors.violet,
-            --             Rv = colors.violet,
-            --             cv = colors.red,
-            --             ce = colors.red,
-            --             r = colors.cyan,
-            --             rm = colors.cyan,
-            --             ['r?'] = colors.cyan,
-            --             ['!'] = colors.red,
-            --             t = colors.red,
-            --         }
-            --         return { fg = mode_color[vim.fn.mode()] }
-            --     end,
-            --     padding = { right = 1 },
-            -- }
-            --
-            -- ins_left {
-            --     -- filesize component
-            --     'filesize',
-            --     cond = conditions.buffer_not_empty,
-            -- }
-            --
-            -- ins_left {
-            --     'filename',
-            --     path = 1,
-            --     cond = conditions.buffer_not_empty,
-            --     color = { fg = colors.magenta, gui = 'bold' },
-            -- }
-            --
-            -- ins_left { 'location' }
-            --
-            -- ins_left { 'progress', color = { fg = colors.fg, gui = 'bold' } }
-            --
-            -- ins_left {
-            --     'diagnostics',
-            --     sources = { 'nvim_diagnostic' },
-            --     symbols = { error = ' ', warn = ' ', info = ' ' },
-            --     diagnostics_color = {
-            --         error = { fg = colors.red },
-            --         warn = { fg = colors.yellow },
-            --         info = { fg = colors.cyan },
-            --     },
-            -- }
-            --
-            -- -- Insert mid section. You can make any number of sections in neovim :)
-            -- -- for lualine it's any number greater then 2
-            -- ins_left {
-            --     function()
-            --         return '%='
-            --     end,
-            -- }
-            --
-            -- ins_left {
-            --     -- Lsp server name .
-            --     function()
-            --         local msg = ''
-            --         local buf_ft = vim.api.nvim_get_option_value('filetype', { buf = 0 })
-            --         local clients = vim.lsp.get_clients()
-            --         if next(clients) == nil then
-            --             return msg
-            --         end
-            --         for _, client in ipairs(clients) do
-            --             local filetypes = client.config.filetypes
-            --             if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-            --                 return client.name
-            --             end
-            --         end
-            --         return msg
-            --     end,
-            --     -- icon = ' LSP:',
-            --     color = { fg = '#ffffff', gui = 'bold' },
-            -- }
-            --
-            -- -- Add components to right sections
-            -- ins_right {
-            --     'o:encoding', -- option component same as &encoding in viml
-            --     fmt = string.upper, -- I'm not sure why it's upper case either ;)
-            --     cond = conditions.hide_in_width,
-            --     color = { fg = colors.green, gui = 'bold' },
-            -- }
-            --
-            -- ins_right {
-            --     'fileformat',
-            --     fmt = string.upper,
-            --     icons_enabled = false, -- I think icons are cool but Eviline doesn't have them. sigh
-            --     color = { fg = colors.green, gui = 'bold' },
-            -- }
-            --
-            -- ins_right {
-            --     'branch',
-            --     icon = '',
-            --     color = { fg = colors.violet, gui = 'bold' },
-            -- }
-            --
-            -- ins_right {
-            --     'diff',
-            --     -- Is it me or the symbol for modified us really weird
-            --     symbols = { added = ' ', modified = '󰝤 ', removed = ' ' },
-            --     diff_color = {
-            --         added = { fg = colors.green },
-            --         modified = { fg = colors.orange },
-            --         removed = { fg = colors.red },
-            --     },
-            --     cond = conditions.hide_in_width,
-            -- }
-            --
-            -- ins_right {
-            --     function()
-            --         return '▊'
-            --     end,
-            --     color = { fg = colors.blue },
-            --     padding = { left = 1 },
-            -- }
-            --
-            -- Now don't forget to initialize lualine
             lualine.setup(config)
         end
     },
@@ -887,33 +668,33 @@ require('lazy').setup {
         'nvim-treesitter/nvim-treesitter',
         build = ':TSUpdate',
         dependencies = {
-            {
-                'nvim-treesitter/nvim-treesitter-textobjects',
-                config = function()
-                    -- When in diff mode, we want to use the default
-                    -- vim text objects c & C instead of the treesitter ones.
-                    local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
-                    local configs = require 'nvim-treesitter.configs'
-                    for name, fn in pairs(move) do
-                        if name:find 'goto' == 1 then
-                            move[name] = function(q, ...)
-                                if vim.wo.diff then
-                                    local config = configs.get_module(
-                                            'textobjects.move')
-                                        [name] ---@type table<string,string>
-                                    for key, query in pairs(config or {}) do
-                                        if q == query and key:find '[%]%[][cC]' then
-                                            vim.cmd('normal! ' .. key)
-                                            return
-                                        end
-                                    end
-                                end
-                                return fn(q, ...)
-                            end
-                        end
-                    end
-                end,
-            },
+            -- {
+            --     'nvim-treesitter/nvim-treesitter-textobjects',
+            --     config = function()
+            --         -- When in diff mode, we want to use the default
+            --         -- vim text objects c & C instead of the treesitter ones.
+            --         local move = require 'nvim-treesitter.textobjects.move' ---@type table<string,fun(...)>
+            --         local configs = require 'nvim-treesitter.configs'
+            --         for name, fn in pairs(move) do
+            --             if name:find 'goto' == 1 then
+            --                 move[name] = function(q, ...)
+            --                     if vim.wo.diff then
+            --                         local config = configs.get_module(
+            --                                 'textobjects.move')
+            --                             [name] ---@type table<string,string>
+            --                         for key, query in pairs(config or {}) do
+            --                             if q == query and key:find '[%]%[][cC]' then
+            --                                 vim.cmd('normal! ' .. key)
+            --                                 return
+            --                             end
+            --                         end
+            --                     end
+            --                     return fn(q, ...)
+            --                 end
+            --             end
+            --         end
+            --     end,
+            -- },
         },
         config = function()
             -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -969,88 +750,155 @@ require('lazy').setup {
             }
         end,
     },
- --    {
-	-- 	'neovim/nvim-lspconfig',
-	-- 	config = function()
-	-- 		-- Setup language servers.
-	--
-	-- 		-- Rust
-	-- 		vim.lsp.config('rust_analyzer', {
-	-- 			-- Server-specific settings. See `:help lspconfig-setup`
-	-- 			settings = {
-	-- 				["rust-analyzer"] = {
-	-- 					cargo = {
-	-- 						features = "all",
-	-- 					},
-	-- 					checkOnSave = {
-	-- 						enable = true,
-	-- 					},
-	-- 					check = {
-	-- 						command = "clippy",
-	-- 					},
-	-- 					imports = {
-	-- 						group = {
-	-- 							enable = false,
-	-- 						},
-	-- 					},
-	-- 					completion = {
-	-- 						postfix = {
-	-- 							enable = false,
-	-- 						},
-	-- 					},
-	-- 				},
-	-- 			},
-	-- 		})
-	-- 		vim.lsp.enable('rust_analyzer')
-	--
-	-- 		-- Global mappings.
-	-- 		-- See `:help vim.diagnostic.*` for documentation on any of the below functions
-	-- 		vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
-	-- 		vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
-	-- 		vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
-	-- 		vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
-	--
-	-- 		-- Use LspAttach autocommand to only map the following keys
-	-- 		-- after the language server attaches to the current buffer
-	-- 		vim.api.nvim_create_autocmd('LspAttach', {
-	-- 			group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-	-- 			callback = function(ev)
-	-- 				-- Enable completion triggered by <c-x><c-o>
-	-- 				vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-	--
-	-- 				-- Buffer local mappings.
-	-- 				-- See `:help vim.lsp.*` for documentation on any of the below functions
-	-- 				local opts = { buffer = ev.buf }
-	-- 				vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-	-- 				vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-	-- 				vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-	-- 				vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-	-- 				vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-	-- 				vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
-	-- 				vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
-	-- 				vim.keymap.set('n', '<leader>wl', function()
-	-- 					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-	-- 				end, opts)
-	-- 				--vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
-	-- 				vim.keymap.set('n', '<leader>r', vim.lsp.buf.rename, opts)
-	-- 				vim.keymap.set({ 'n', 'v' }, '<leader>a', vim.lsp.buf.code_action, opts)
-	-- 				vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-	-- 				vim.keymap.set('n', '<leader>f', function()
-	-- 					vim.lsp.buf.format { async = true }
-	-- 				end, opts)
-	--
-	-- 				local client = vim.lsp.get_client_by_id(ev.data.client_id)
-	--
-	-- 				-- TODO: find some way to make this only apply to the current line.
-	-- 				-- if client.server_capabilities.inlayHintProvider then
-	-- 				--     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-	-- 				-- end
-	--
-	-- 				-- None of this semantics tokens business.
-	-- 				-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
-	-- 				client.server_capabilities.semanticTokensProvider = nil
-	-- 			end,
-	-- 		})
-	-- 	end
-	-- },
+    {
+		'neovim/nvim-lspconfig',
+		config = function()
+			-- Setup language servers.
+
+			-- Rust
+			vim.lsp.config('rust_analyzer', {
+				-- Server-specific settings. See `:help lspconfig-setup`
+				settings = {
+					["rust-analyzer"] = {
+						cargo = {
+							features = "all",
+						},
+						checkOnSave = {
+							enable = true,
+						},
+						check = {
+							command = "clippy",
+						},
+						imports = {
+							group = {
+								enable = false,
+							},
+						},
+						completion = {
+							postfix = {
+								enable = false,
+							},
+						},
+					},
+				},
+			})
+			vim.lsp.enable('rust_analyzer')
+
+			-- Global mappings.
+			-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+			vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
+
+			-- Use LspAttach autocommand to only map the following keys
+			-- after the language server attaches to the current buffer
+			vim.api.nvim_create_autocmd('LspAttach', {
+				group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+				callback = function(ev)
+					-- Enable completion triggered by <c-x><c-o>
+					vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+					-- Buffer local mappings.
+					-- See `:help vim.lsp.*` for documentation on any of the below functions
+					local opts = { buffer = ev.buf }
+					vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+					vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+					vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+					vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+					vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+					vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
+					vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
+					vim.keymap.set('n', '<leader>wl', function()
+						print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+					end, opts)
+					--vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+					vim.keymap.set('n', '<leader>r', vim.lsp.buf.rename, opts)
+					vim.keymap.set({ 'n', 'v' }, '<leader>a', vim.lsp.buf.code_action, opts)
+					vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+					vim.keymap.set('n', '<leader>f', function()
+						vim.lsp.buf.format { async = true }
+					end, opts)
+
+					local client = vim.lsp.get_client_by_id(ev.data.client_id)
+
+					-- TODO: find some way to make this only apply to the current line.
+					-- if client.server_capabilities.inlayHintProvider then
+					--     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+					-- end
+
+					-- None of this semantics tokens business.
+					-- https://www.reddit.com/r/neovim/comments/143efmd/is_it_possible_to_disable_treesitter_completely/
+					client.server_capabilities.semanticTokensProvider = nil
+
+                    local function echo_line_diagnostic()
+                        local line = vim.fn.line(".") - 1
+                        local diags = vim.diagnostic.get(0, { lnum = line })
+
+                        if #diags == 0 then
+                            vim.api.nvim_echo({ { "" } }, false, {})
+                            return
+                        end
+
+                        table.sort(diags, function(a, b)
+                            return a.severity < b.severity
+                        end)
+
+                        local d = diags[1]
+                        local msg = d.message:gsub("\n", " ")
+
+                        -- Truncate to fit one cmdline
+                        local width = vim.o.columns - 1
+                        if #msg > width then
+                            msg = msg:sub(1, width - 1) .. "…"
+                        end
+
+                        local hl = ({
+                            [vim.diagnostic.severity.ERROR] = "DiagnosticError",
+                            [vim.diagnostic.severity.WARN]  = "DiagnosticWarn",
+                            [vim.diagnostic.severity.INFO]  = "DiagnosticInfo",
+                            [vim.diagnostic.severity.HINT]  = "DiagnosticHint",
+                        })[d.severity]
+
+                        vim.api.nvim_echo(
+                            { { msg, hl } },
+                            false,
+                            {}
+                        )
+                    end
+
+                    -- show the single line diagnostics in the command area
+                    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+                        callback = echo_line_diagnostic,
+                    })
+
+                    -- when line doesn't have error clear the message
+                    vim.api.nvim_create_autocmd(
+                        { "BufLeave", "InsertEnter" },
+                        {
+                            callback = function()
+                                vim.api.nvim_echo({ { "" } }, false, {})
+                            end,
+                        }
+                    )
+				end,
+			})
+		end
+	},
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        opts = {
+            -- your configuration comes here
+            -- or leave it empty to use the default settings
+            -- refer to the configuration section below
+            preset = "helix"
+        },
+        keys = {
+            {
+                "<leader>?",
+                function()
+                    require("which-key").show({ global = false })
+                end,
+                desc = "Buffer Local Keymaps (which-key)",
+            },
+        },
+    },
 }
