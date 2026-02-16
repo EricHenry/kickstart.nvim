@@ -378,20 +378,6 @@ require('lazy').setup {
         'mg979/vim-visual-multi',
         branch = 'master',
     },
-    {
-        'nvim-lualine/lualine.nvim',
-        dependencies = { 'nvim-tree/nvim-web-devicons' },
-        config = function()
-            local lualine = require('lualine')
-            local config = lualine.get_config()
-            config.options.theme = 'gruvbox'
-            config.sections.lualine_c = {
-                { 'filename', path = 1, }
-            }
-
-            lualine.setup(config)
-        end
-    },
     -- {
     --     'preservim/tagbar',
     --     config = function()
