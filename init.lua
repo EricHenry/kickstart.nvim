@@ -331,25 +331,67 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            vim.o.background = 'dark'
-            vim.cmd([[colorscheme gruvbox-dark-hard]])
-
-            -- XXX: hi Normal ctermbg=NONE
-            -- Make comments more prominent -- they are important.
-            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            vim.api.nvim_set_hl(0, 'Comment', bools)
-
-            -- Make it clearly visible which argument we're at.
-            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-
-            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+            -- vim.o.background = 'dark'
+            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
+            --
+            -- -- XXX: hi Normal ctermbg=NONE
+            -- -- Make comments more prominent -- they are important.
+            -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+            -- vim.api.nvim_set_hl(0, 'Comment', bools)
+            --
+            -- -- Make it clearly visible which argument we're at.
+            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+            --
+            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
+    },
+    {
+        'NTBBloodbath/doom-one.nvim',
+        config = function()
+            -- Add color to cursor
+            vim.g.doom_one_cursor_coloring = false
+            -- Set :terminal colors
+            vim.g.doom_one_terminal_colors = true
+            -- Enable italic comments
+            vim.g.doom_one_italic_comments = true
+            -- Enable TS support
+            vim.g.doom_one_enable_treesitter = true
+            -- Color whole diagnostic text or only underline
+            vim.g.doom_one_diagnostics_text_color = false
+            -- Enable transparent background
+            vim.g.doom_one_transparent_background = false
+
+            -- Pumblend transparency
+            vim.g.doom_one_pumblend_enable = false
+            vim.g.doom_one_pumblend_transparency = 20
+
+            -- Plugins integration
+            vim.g.doom_one_plugin_neorg = true
+            vim.g.doom_one_plugin_barbar = false
+            vim.g.doom_one_plugin_telescope = false
+            vim.g.doom_one_plugin_neogit = false
+            vim.g.doom_one_plugin_nvim_tree = false
+            vim.g.doom_one_plugin_dashboard = false
+            vim.g.doom_one_plugin_startify = false
+            vim.g.doom_one_plugin_whichkey = true
+            vim.g.doom_one_plugin_indent_blankline = false
+            vim.g.doom_one_plugin_vim_illuminate = false
+            vim.g.doom_one_plugin_lspsaga = false
+
+             vim.cmd("colorscheme doom-one")
+        end
+    },
+    {
+        "nvim-neorg/neorg",
+        lazy = false, -- Disable lazy loading as some `lazy.nvim` distributions set `lazy = true` by default
+        version = "*", -- Pin Neorg to the latest stable release
+        config = true,
     },
     -- {
     --     "vague2k/vague.nvim",
