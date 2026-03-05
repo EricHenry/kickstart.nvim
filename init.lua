@@ -169,13 +169,13 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '<leader>d', ':copen<CR>', { desc = 'Open [Q]uickfix list' })
-vim.diagnostic.config({
-    virtual_text = false,
-    signs = true,
-    underline = false,
-    float = false,
-})
+-- vim.keymap.set('n', '<leader>d', ':copen<CR>', { desc = 'Open [Q]uickfix list' })
+-- vim.diagnostic.config({
+--     virtual_text = false,
+--     signs = true,
+--     underline = false,
+--     float = false,
+-- })
 
 
 -- "very magic" (less escaping needed) regexes by default
@@ -331,24 +331,24 @@ require('lazy').setup {
         lazy = false,    -- load at start
         priority = 1000, -- load first
         config = function()
-            -- vim.o.background = 'dark'
-            -- vim.cmd([[colorscheme gruvbox-dark-hard]])
-            --
-            -- -- XXX: hi Normal ctermbg=NONE
-            -- -- Make comments more prominent -- they are important.
-            -- local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
-            -- vim.api.nvim_set_hl(0, 'Comment', bools)
-            --
-            -- -- Make it clearly visible which argument we're at.
-            -- local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
-            -- vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
-            --     { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
-            --
-            -- local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-            -- vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
-            -- vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
+            vim.o.background = 'dark'
+            vim.cmd([[colorscheme gruvbox-dark-hard]])
+
+            -- XXX: hi Normal ctermbg=NONE
+            -- Make comments more prominent -- they are important.
+            local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+            vim.api.nvim_set_hl(0, 'Comment', bools)
+
+            -- Make it clearly visible which argument we're at.
+            local marked = vim.api.nvim_get_hl(0, { name = 'PMenu' })
+            vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter',
+                { fg = marked.fg, bg = marked.bg, ctermfg = marked.ctermfg, ctermbg = marked.ctermbg, bold = true })
+
+            local visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+            vim.api.nvim_set_hl(0, '@variable', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'Delimiter', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'Operator', { fg = visual.fg, })
+            vim.api.nvim_set_hl(0, 'MatchParens', { fg = visual.fg, })
         end
     },
     {
@@ -372,7 +372,7 @@ require('lazy').setup {
             vim.g.doom_one_pumblend_transparency = 20
 
             -- Plugins integration
-            vim.g.doom_one_plugin_neorg = true
+            vim.g.doom_one_plugin_neorg = false
             vim.g.doom_one_plugin_barbar = false
             vim.g.doom_one_plugin_telescope = false
             vim.g.doom_one_plugin_neogit = false
@@ -384,14 +384,24 @@ require('lazy').setup {
             vim.g.doom_one_plugin_vim_illuminate = false
             vim.g.doom_one_plugin_lspsaga = false
 
-             vim.cmd("colorscheme doom-one")
+             -- vim.cmd("colorscheme doom-one")
         end
     },
     {
-        "nvim-neorg/neorg",
-        lazy = false, -- Disable lazy loading as some `lazy.nvim` distributions set `lazy = true` by default
-        version = "*", -- Pin Neorg to the latest stable release
-        config = true,
+        'nvim-orgmode/orgmode',
+        event = 'VeryLazy',
+        ft = { 'org' },
+        config = function()
+            -- Setup orgmode
+            local org = require('orgmode')
+            org.setup({
+                org_agenda_files = {'~/notes/agenda/**/*.org'},
+                org_default_notes_file = '~/notes/olog.org',
+            })
+
+            -- Experimental LSP support
+            vim.lsp.enable('org')
+        end,
     },
     -- {
     --     "vague2k/vague.nvim",
@@ -616,7 +626,8 @@ require('lazy').setup {
             vim.keymap.set('n', '<leader>sk', function() fzf.keymaps() end, { desc = '[S]earch [K]eymaps' })
             vim.keymap.set('n', '<leader><leader>', function() fzf.files() end, { desc = '[S]earch [F]iles' })
             vim.keymap.set('n', '<leader>sg', function() fzf.git_files() end, { desc = '[S]earch Git [F]iles' })
-            vim.keymap.set('n', '<leader>ss', function() fzf.builtin() end, { desc = '[S]earch [S]elect Telescope' })
+            vim.keymap.set('n', '<leader>sb', function() fzf.builtin() end, { desc = '[S]earch [b]uiltins' })
+            vim.keymap.set('n', '<leader>ss', function() fzf.lsp_document_symbols() end, { desc = '[S]earch document [s]ymbols' })
             vim.keymap.set('n', '<leader>sw', function() fzf.grep_cword() end, { desc = '[S]earch current [W]ord' })
             vim.keymap.set('n', '<leader>/', function() fzf.live_grep() end, { desc = '[S]earch project by [G]rep' })
             vim.keymap.set('n', '<leader>sd', function() fzf.diagnostics_document() end,
